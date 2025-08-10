@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simplifly - Daily AI Assistant</title>
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom styles for fonts and layout */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@700&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
@@ -27,12 +29,17 @@
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen text-[#333333]">
+
+    <!-- Main Container -->
     <div class="max-w-5xl w-full bg-white shadow-xl rounded-3xl p-6 md:p-10 border border-gray-100">
+        <!-- Header Section -->
         <div class="flex flex-col sm:flex-row items-center justify-between mb-4">
             <h1 class="text-3xl text-[#4EA8DE]">Simplifly</h1>
             <p class="text-sm text-gray-400 mt-2 sm:mt-0">User ID: <span id="user-id" class="font-mono font-bold text-gray-600">Loading...</span></p>
         </div>
         <p class="text-lg text-gray-500 font-semibold mb-8 text-center sm:text-left">AI Schedule Organizer</p>
+
+        <!-- Tasks Section -->
         <div class="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
             <h2 class="text-2xl font-semibold text-[#333333] mb-4">Tasks</h2>
             <form id="add-assignment-form" class="grid gap-4 lg:grid-cols-6">
@@ -58,85 +65,104 @@
                 <p id="assignments-placeholder" class="text-gray-400 text-center italic mt-4">Add a task to get started.</p>
             </div>
         </div>
+
+        <!-- Action Buttons Section -->
         <div class="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col md:flex-row gap-4 justify-between items-center">
              <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-[#333333] font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
-                Connect Google Calendar
-            </button>
-            <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
-                Generate Summary
-            </button>
+                 Connect Google Calendar
+             </button>
+             <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
+                 Generate Summary
+             </button>
         </div>
+
+        <!-- Loading and Summary Output Section -->
         <div id="loading" class="hidden flex justify-center items-center h-48">
             <div class="w-9 h-9 rounded-full border-4 border-gray-200 border-l-[#4EA8DE] animate-spin"></div>
         </div>
         <div id="summary-output" class="hidden min-h-[200px] bg-gray-100 border-l-4 border-l-[#4EA8DE] p-6 rounded-xl shadow-md transition-opacity">
         </div>
     </div>
+    <div id="message-box" class="fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-full opacity-0 z-50 text-white"></div>
+    <!-- Google API library for Calendar integration -->
     <script src="https://apis.google.com/js/api.js"></script>
     <script type="module">
+        // Import Firebase SDK modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        const geminiApiKey = "";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // This is your new Firebase SDK configuration.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzMgpUM9wgrSBWgk50AvmnBFE_f7IvJ_Q",
+            authDomain: "simplifly-efd5f.firebaseapp.com",
+            projectId: "simplifly-efd5f",
+            storageBucket: "simplifly-efd5f.firebasestorage.app",
+            messagingSenderId: "478943856947",
+            appId: "1:478943856947:web:07b95a8c0be06dd73c5646",
+            measurementId: "G-6MR8C52BQX"
+        };
+        
+        // Gemini and Google Calendar configurations
+        const geminiApiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44"; // This is now handled by the server environment
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+        
         let app, db, auth;
         let userId;
         let assignments = [];
         let isAuthReady = false;
         let googleCalendarEvents = [];
+
+        // DOM elements
+        const userIdSpan = document.getElementById('user-id');
+        const addAssignmentForm = document.getElementById('add-assignment-form');
+        const assignmentTitleInput = document.getElementById('assignment-title');
+        const assignmentDeadlineInput = document.getElementById('assignment-deadline');
+        const assignmentsListDiv = document.getElementById('assignments-list');
+        const connectCalendarBtn = document.getElementById('connect-calendar-btn');
+        const generateBtn = document.getElementById('generate-btn');
+        const loadingDiv = document.getElementById('loading');
+        const summaryOutputDiv = document.getElementById('summary-output');
+        const messageBox = document.getElementById('message-box');
+        
+        // Initialize Firebase and set up authentication
         try {
-            if (firebaseConfig) {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        userIdSpan.textContent = userId;
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        
+            // Listen for authentication state changes. This is the core of getting the user ID.
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // User is signed in. We can now get their unique ID.
+                    userId = user.uid;
+                    userIdSpan.textContent = userId;
+                    isAuthReady = true;
+                    // Start listening for tasks now that we have a user ID
+                    listenForAssignments();
+                    generateBtn.disabled = false;
+                } else {
+                    // No user is signed in. Sign them in anonymously to get a unique ID.
+                    console.log("No user is signed in. Attempting anonymous authentication.");
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Authentication failed:", error);
+                        userIdSpan.textContent = 'Auth Failed';
                         isAuthReady = true;
-                        listenForAssignments();
-                        generateBtn.disabled = false;
-                        generateSummary();
-                    } else {
-                        console.log("No user is signed in. Attempting anonymous authentication.");
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Authentication failed:", error);
-                            userIdSpan.textContent = 'Auth Failed';
-                            isAuthReady = true;
-                        }
                     }
-                });
-            } else {
-                console.warn("Firebase config not found. Running in local mode.");
-                userId = crypto.randomUUID();
-                userIdSpan.textContent = userId;
-                isAuthReady = true;
-                generateBtn.disabled = false;
-                showMessage("Firebase config not found. Data persistence is disabled.", "bg-gray-500", 5000);
-                renderAssignments(assignments);
-                generateSummary();
-            }
+                }
+            });
         } catch (e) {
             console.error("Firebase initialization failed:", e);
-            userId = crypto.randomUUID();
-            userIdSpan.textContent = userId;
-            isAuthReady = true;
-            generateBtn.disabled = false;
-            showMessage("Firebase initialization failed. Data persistence is disabled.", "bg-gray-500", 5000);
-            renderAssignments(assignments);
-            generateSummary();
+            userIdSpan.textContent = 'Init Failed';
+            showMessage("Firebase initialization failed. Check the console.", "bg-red-500", 5000);
         }
+
+        // --- All other functions remain the same, but now use the firebaseConfig.appId variable ---
+
         function showMessage(text, bgColor, duration) {
             messageBox.textContent = text;
             messageBox.className = `fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 z-50 ${bgColor} text-white`;
@@ -144,6 +170,7 @@
                 messageBox.className = `fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-full opacity-0 z-50 ${bgColor} text-white`;
             }, duration);
         }
+
         async function connectGoogleCalendar() {
             try {
                 await gapi.client.init({
@@ -165,6 +192,7 @@
                 showMessage("Failed to connect to Google Calendar.", "bg-red-500", 5000);
             }
         }
+        
         async function fetchCalendarEvents() {
             if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
                 console.warn("Not signed in to Google Calendar. Skipping event fetch.");
@@ -195,10 +223,13 @@
                 showMessage("Error fetching calendar events.", "bg-red-500", 5000);
             }
         }
+        
         connectCalendarBtn.addEventListener('click', () => {
             gapi.load('client:auth2', connectGoogleCalendar);
         });
+
         function sortAssignments(assignments) {
+            // Sort by deadline, then by difficulty (High to Low)
             const difficultyMap = { 'high': 3, 'medium': 2, 'low': 1 };
             return assignments.sort((a, b) => {
                 const deadlineA = new Date(a.deadline);
@@ -209,51 +240,50 @@
                 return difficultyMap[b.difficulty] - difficultyMap[a.difficulty];
             });
         }
+        
         function listenForAssignments() {
-            if (!isAuthReady) { return; }
-            if (db) {
-                const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
-                const q = query(privateAssignmentsCollection, where("completed", "==", false));
-                onSnapshot(q, (querySnapshot) => {
-                    const overdueTasks = [];
-                    assignments = [];
-                    if (querySnapshot.empty) {
-                        renderAssignments(assignments);
-                    } else {
-                        const now = new Date();
-                        querySnapshot.forEach((doc) => {
-                            const data = doc.data();
-                            const deadlineDate = new Date(data.deadline);
-                            if (deadlineDate < now) {
-                                overdueTasks.push(doc.id);
-                            } else {
-                                assignments.push({ ...data, id: doc.id });
-                            }
-                        });
-                        overdueTasks.forEach(id => {
-                            removeAssignment(id, false);
-                        });
-                        renderAssignments(assignments);
-                    }
-                }, (error) => {
-                    console.error("Error setting up Firestore listener:", error);
-                });
-            } else {
-                renderAssignments(assignments);
-            }
+            if (!isAuthReady || !db) { return; }
+            // Use the Firebase app ID and the user ID to define the path
+            const privateAssignmentsCollection = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`);
+            const q = query(privateAssignmentsCollection, where("completed", "==", false));
+            
+            // Set up a real-time listener
+            onSnapshot(q, (querySnapshot) => {
+                const overdueTasks = [];
+                assignments = [];
+                if (querySnapshot.empty) {
+                    renderAssignments(assignments);
+                } else {
+                    const now = new Date();
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const deadlineDate = new Date(data.deadline);
+                        if (deadlineDate < now) {
+                            // Collect tasks that are overdue to be removed
+                            overdueTasks.push(doc.id);
+                        } else {
+                            assignments.push({ ...data, id: doc.id });
+                        }
+                    });
+                    // Remove overdue tasks
+                    overdueTasks.forEach(id => {
+                        removeAssignment(id, false); // Don't show a message for auto-removal
+                    });
+                    renderAssignments(assignments);
+                }
+            }, (error) => {
+                console.error("Error setting up Firestore listener:", error);
+            });
         }
+        
         async function markAsDone(docId) {
             if (!db) {
-                const index = assignments.findIndex(a => a.id === docId);
-                if (index > -1) {
-                    assignments.splice(index, 1);
-                }
-                renderAssignments(assignments);
-                showMessage("Database functions are disabled in local environment.", "bg-gray-500", 5000);
+                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
                 return;
             }
             try {
-                const assignmentRef = doc(db, `artifacts/${appId}/users/${userId}/assignments`, docId);
+                // Update the document to mark it as completed
+                const assignmentRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`, docId);
                 await updateDoc(assignmentRef, { completed: true });
                 showMessage("Task marked as done!", "bg-[#9EE6C8]", 3000);
             } catch (e) {
@@ -261,20 +291,17 @@
                 showMessage("Error marking task as done. Check the console.", "bg-red-500", 5000);
             }
         }
+        
         async function removeAssignment(docId, showMsg = true) {
             if (!db) {
-                const index = assignments.findIndex(a => a.id === docId);
-                if (index > -1) {
-                    assignments.splice(index, 1);
-                }
-                renderAssignments(assignments);
                 if (showMsg) {
-                    showMessage("Database functions are disabled in local environment.", "bg-gray-500", 5000);
+                    showMessage("Database functions are disabled.", "bg-gray-500", 5000);
                 }
                 return;
             }
             try {
-                const assignmentRef = doc(db, `artifacts/${appId}/users/${userId}/assignments`, docId);
+                // Delete the document from Firestore
+                const assignmentRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`, docId);
                 await deleteDoc(assignmentRef);
                 if (showMsg) {
                     showMessage("Task removed!", "bg-[#333333]", 3000);
@@ -286,6 +313,7 @@
                 }
             }
         }
+        
         addAssignmentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = assignmentTitleInput.value;
@@ -293,22 +321,12 @@
             const difficulty = document.querySelector('input[name="difficulty-radio"]:checked').value;
             if (title && deadline && difficulty) {
                 if (!db) {
-                    assignments.push({
-                        id: crypto.randomUUID(),
-                        title: title,
-                        deadline: deadline,
-                        difficulty: difficulty,
-                        completed: false
-                    });
-                    renderAssignments(assignments);
-                    showMessage("Task added (temporary). Data persistence is disabled.", "bg-gray-500", 5000);
-                    assignmentTitleInput.value = '';
-                    assignmentDeadlineInput.value = '';
-                    generateSummary();
+                    showMessage("Database functions are disabled.", "bg-gray-500", 5000);
                     return;
                 }
                 try {
-                    const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+                    // Add a new document to the user's private collection
+                    const privateAssignmentsCollection = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`);
                     await addDoc(privateAssignmentsCollection, {
                         title: title,
                         deadline: deadline,
@@ -327,12 +345,15 @@
                 showMessage("Please fill out all fields to add a task.", "bg-red-500", 5000);
             }
         });
+        
         function renderAssignments(assignmentsToRender) {
             assignmentsListDiv.innerHTML = '';
             if (assignmentsToRender.length === 0) {
                 assignmentsListDiv.innerHTML = '<p class="text-gray-400 text-center italic mt-4">Add a task to get started.</p>';
             } else {
-                assignmentsToRender.forEach((data) => {
+                // Sort assignments before rendering
+                const sortedAssignments = sortAssignments(assignmentsToRender);
+                sortedAssignments.forEach((data) => {
                     const assignmentEl = document.createElement('div');
                     assignmentEl.className = 'flex justify-between items-center p-3 bg-white rounded-xl border border-gray-200 shadow-sm transition-shadow hover:shadow-md';
                     const deadline = new Date(data.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -361,7 +382,9 @@
                 });
             }
         }
+        
         generateBtn.addEventListener('click', generateSummary);
+        
         function renderSummary(summaryData) {
             summaryOutputDiv.innerHTML = '';
             const mainContainer = document.createElement('div');
@@ -423,6 +446,7 @@
             mainContainer.appendChild(assignmentsSection);
             summaryOutputDiv.appendChild(mainContainer);
         }
+        
         async function generateSummary() {
             loadingDiv.classList.remove('hidden');
             summaryOutputDiv.classList.add('hidden');
@@ -472,7 +496,7 @@
                     }
                 }
             };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
             let attempts = 0;
             const maxAttempts = 5;
             while (attempts < maxAttempts) {
