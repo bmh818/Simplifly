@@ -78,75 +78,64 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { projectId: "local-dev-id" };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         const geminiApiKey = "";
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
         let app, db, auth;
-        let isLocalEnv = false;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            if (firebaseConfig.projectId === "local-dev-id") {
-                isLocalEnv = true;
-            }
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
-            isLocalEnv = true;
-        }
-        const generateBtn = document.getElementById('generate-btn');
-        const loadingDiv = document.getElementById('loading');
-        const summaryOutputDiv = document.getElementById('summary-output');
-        const addAssignmentForm = document.getElementById('add-assignment-form');
-        const assignmentTitleInput = document.getElementById('assignment-title');
-        const assignmentDeadlineInput = document.getElementById('assignment-deadline');
-        const assignmentsListDiv = document.getElementById('assignments-list');
-        const userIdSpan = document.getElementById('user-id');
-        const messageBox = document.getElementById('message-box');
-        const connectCalendarBtn = document.getElementById('connect-calendar-btn');
         let userId;
         let assignments = [];
         let isAuthReady = false;
         let googleCalendarEvents = [];
-        function setupLocalEnvironment() {
-            userId = 'Temporary-User-ID';
+        try {
+            if (firebaseConfig) {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdSpan.textContent = userId;
+                        isAuthReady = true;
+                        listenForAssignments();
+                        generateBtn.disabled = false;
+                        generateSummary();
+                    } else {
+                        console.log("No user is signed in. Attempting anonymous authentication.");
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Authentication failed:", error);
+                            userIdSpan.textContent = 'Auth Failed';
+                            isAuthReady = true;
+                        }
+                    }
+                });
+            } else {
+                console.warn("Firebase config not found. Running in local mode.");
+                userId = crypto.randomUUID();
+                userIdSpan.textContent = userId;
+                isAuthReady = true;
+                generateBtn.disabled = false;
+                showMessage("Firebase config not found. Data persistence is disabled.", "bg-gray-500", 5000);
+                renderAssignments(assignments);
+                generateSummary();
+            }
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            userId = crypto.randomUUID();
             userIdSpan.textContent = userId;
             isAuthReady = true;
             generateBtn.disabled = false;
-            console.warn("Running in local environment. Data persistence is disabled.");
-            showMessage("Running in local mode. No data will be saved.", "bg-gray-500", 5000);
+            showMessage("Firebase initialization failed. Data persistence is disabled.", "bg-gray-500", 5000);
             renderAssignments(assignments);
             generateSummary();
-        }
-        if (isLocalEnv) {
-            setupLocalEnvironment();
-        } else {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userIdSpan.textContent = userId;
-                    isAuthReady = true;
-                    listenForAssignments();
-                    generateBtn.disabled = false;
-                    generateSummary();
-                } else {
-                    console.log("No user is signed in. Attempting anonymous authentication.");
-                    try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) {
-                        console.error("Authentication failed:", error);
-                        userIdSpan.textContent = 'Auth Failed';
-                        isAuthReady = true;
-                    }
-                }
-            });
         }
         function showMessage(text, bgColor, duration) {
             messageBox.textContent = text;
@@ -221,36 +210,40 @@
             });
         }
         function listenForAssignments() {
-            if (!userId || isLocalEnv) { return; }
-            const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
-            const q = query(privateAssignmentsCollection, where("completed", "==", false));
-            onSnapshot(q, (querySnapshot) => {
-                const overdueTasks = [];
-                assignments = [];
-                if (querySnapshot.empty) {
-                    renderAssignments(assignments);
-                } else {
-                    const now = new Date();
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const deadlineDate = new Date(data.deadline);
-                        if (deadlineDate < now) {
-                            overdueTasks.push(doc.id);
-                        } else {
-                            assignments.push({ ...data, id: doc.id });
-                        }
-                    });
-                    overdueTasks.forEach(id => {
-                        removeAssignment(id, false);
-                    });
-                    renderAssignments(assignments);
-                }
-            }, (error) => {
-                console.error("Error setting up Firestore listener:", error);
-            });
+            if (!isAuthReady) { return; }
+            if (db) {
+                const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+                const q = query(privateAssignmentsCollection, where("completed", "==", false));
+                onSnapshot(q, (querySnapshot) => {
+                    const overdueTasks = [];
+                    assignments = [];
+                    if (querySnapshot.empty) {
+                        renderAssignments(assignments);
+                    } else {
+                        const now = new Date();
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            const deadlineDate = new Date(data.deadline);
+                            if (deadlineDate < now) {
+                                overdueTasks.push(doc.id);
+                            } else {
+                                assignments.push({ ...data, id: doc.id });
+                            }
+                        });
+                        overdueTasks.forEach(id => {
+                            removeAssignment(id, false);
+                        });
+                        renderAssignments(assignments);
+                    }
+                }, (error) => {
+                    console.error("Error setting up Firestore listener:", error);
+                });
+            } else {
+                renderAssignments(assignments);
+            }
         }
         async function markAsDone(docId) {
-            if (isLocalEnv) {
+            if (!db) {
                 const index = assignments.findIndex(a => a.id === docId);
                 if (index > -1) {
                     assignments.splice(index, 1);
@@ -269,7 +262,7 @@
             }
         }
         async function removeAssignment(docId, showMsg = true) {
-            if (isLocalEnv) {
+            if (!db) {
                 const index = assignments.findIndex(a => a.id === docId);
                 if (index > -1) {
                     assignments.splice(index, 1);
@@ -299,7 +292,7 @@
             const deadline = assignmentDeadlineInput.value;
             const difficulty = document.querySelector('input[name="difficulty-radio"]:checked').value;
             if (title && deadline && difficulty) {
-                if (isLocalEnv) {
+                if (!db) {
                     assignments.push({
                         id: crypto.randomUUID(),
                         title: title,
