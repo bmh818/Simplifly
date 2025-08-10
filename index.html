@@ -104,7 +104,8 @@
         };
         
         // Gemini and Google Calendar configurations
-        const geminiApiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44"; // This is now handled by the server environment
+        // IMPORTANT: The Gemini API key is intentionally an empty string because it is automatically provided by the server
+        const geminiApiKey = ""; 
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
@@ -173,8 +174,9 @@
 
         async function connectGoogleCalendar() {
             try {
+                // FIX: Use firebaseConfig.apiKey instead of geminiApiKey for Google Calendar
                 await gapi.client.init({
-                    apiKey: geminiApiKey,
+                    apiKey: firebaseConfig.apiKey,
                     clientId: GOOGLE_API_CLIENT_ID,
                     discoveryDocs: GOOGLE_API_DISCOVERY_DOCS,
                     scope: GOOGLE_API_SCOPES,
