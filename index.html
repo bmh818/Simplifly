@@ -106,7 +106,10 @@
         // Gemini and Google Calendar configurations
         // IMPORTANT: The Gemini API key is intentionally an empty string because it is automatically provided by the server
         const geminiApiKey = ""; 
+        
+        // --- THIS IS YOUR GOOGLE CLOUD OAUTH 2.0 CLIENT ID ---
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
+        
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
         
@@ -174,7 +177,7 @@
 
         async function connectGoogleCalendar() {
             try {
-                // FIX: Use firebaseConfig.apiKey instead of geminiApiKey for Google Calendar
+                // FIX: Use the correct GOOGLE_API_CLIENT_ID for authentication
                 await gapi.client.init({
                     apiKey: firebaseConfig.apiKey,
                     clientId: GOOGLE_API_CLIENT_ID,
@@ -191,7 +194,7 @@
                 }
             } catch (error) {
                 console.error("Error connecting to Google Calendar:", error);
-                showMessage("Failed to connect to Google Calendar.", "bg-red-500", 5000);
+                showMessage("Failed to connect to Google Calendar. Please check your Client ID.", "bg-red-500", 5000);
             }
         }
         
