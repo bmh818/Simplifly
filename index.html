@@ -103,11 +103,15 @@
             measurementId: "G-6MR8C52BQX"
         };
         
-        // Gemini and Google Calendar configurations
-        // IMPORTANT: The Gemini API key is intentionally an empty string because it is automatically provided by the server
-        const geminiApiKey = ""; 
+        // --- Gemini API Key Configuration ---
+        // IMPORTANT: For your own hosting, you MUST replace the empty string below
+        // with your own Gemini API key.
+        const geminiApiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
         
-        // --- THIS IS YOUR GOOGLE CLOUD OAUTH 2.0 CLIENT ID ---
+        // --- Google Calendar Client ID Configuration ---
+        // This is your unique OAuth 2.0 Client ID for connecting to Google Calendar.
+        // You MUST ensure your Google Cloud project has the correct "Authorized JavaScript origins"
+        // and "Authorized redirect URIs" configured to 'https://docs.google.com'.
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
@@ -165,8 +169,6 @@
             showMessage("Firebase initialization failed. Check the console.", "bg-red-500", 5000);
         }
 
-        // --- All other functions remain the same, but now use the firebaseConfig.appId variable ---
-
         function showMessage(text, bgColor, duration) {
             messageBox.textContent = text;
             messageBox.className = `fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 z-50 ${bgColor} text-white`;
@@ -177,7 +179,6 @@
 
         async function connectGoogleCalendar() {
             try {
-                // FIX: Use the correct GOOGLE_API_CLIENT_ID for authentication
                 await gapi.client.init({
                     apiKey: firebaseConfig.apiKey,
                     clientId: GOOGLE_API_CLIENT_ID,
@@ -194,7 +195,7 @@
                 }
             } catch (error) {
                 console.error("Error connecting to Google Calendar:", error);
-                showMessage("Failed to connect to Google Calendar. Please check your Client ID.", "bg-red-500", 5000);
+                showMessage("Failed to connect to Google Calendar. Check your API keys and client ID.", "bg-red-500", 5000);
             }
         }
         
@@ -501,7 +502,8 @@
                     }
                 }
             };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
+            const apiKey = geminiApiKey; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             let attempts = 0;
             const maxAttempts = 5;
             while (attempts < maxAttempts) {
