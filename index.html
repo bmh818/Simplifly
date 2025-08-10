@@ -90,9 +90,10 @@
         // Import Firebase SDK modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
-        // This is your new Firebase SDK configuration.
+        // --- Your Application Configuration ---
+        // IMPORTANT: Replace these with your actual keys from your Google Cloud and Firebase projects.
         const firebaseConfig = {
             apiKey: "AIzaSyDzMgpUM9wgrSBWgk50AvmnBFE_f7IvJ_Q",
             authDomain: "simplifly-efd5f.firebaseapp.com",
@@ -102,18 +103,12 @@
             appId: "1:478943856947:web:07b95a8c0be06dd73c5646",
             measurementId: "G-6MR8C52BQX"
         };
-        
-        // --- Gemini API Key Configuration ---
-        // IMPORTANT: For your own hosting, you MUST replace the empty string below
-        // with your own Gemini API key.
         const geminiApiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
-        
-        // --- Google Calendar Client ID Configuration ---
-        // This is your unique OAuth 2.0 Client ID for connecting to Google Calendar.
-        // You MUST ensure your Google Cloud project has the correct "Authorized JavaScript origins"
-        // and "Authorized redirect URIs" configured to 'https://docs.google.com'.
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         
+        // Ensure you have configured the "Authorized JavaScript origins" in the Google Cloud Console for your Client ID
+        // to include your GitHub Pages URL, for example: 'https://yourusername.github.io'
+
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
         
@@ -140,20 +135,17 @@
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-        
-            // Listen for authentication state changes. This is the core of getting the user ID.
+            
+            // Listen for authentication state changes.
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    // User is signed in. We can now get their unique ID.
                     userId = user.uid;
                     userIdSpan.textContent = userId;
                     isAuthReady = true;
-                    // Start listening for tasks now that we have a user ID
                     listenForAssignments();
                     generateBtn.disabled = false;
                 } else {
-                    // No user is signed in. Sign them in anonymously to get a unique ID.
-                    console.log("No user is signed in. Attempting anonymous authentication.");
+                    console.log("No user signed in. Attempting anonymous authentication.");
                     try {
                         await signInAnonymously(auth);
                     } catch (error) {
@@ -195,7 +187,7 @@
                 }
             } catch (error) {
                 console.error("Error connecting to Google Calendar:", error);
-                showMessage("Failed to connect to Google Calendar. Check your API keys and client ID.", "bg-red-500", 5000);
+                showMessage("Failed to connect to Google Calendar. Ensure your client ID is configured correctly.", "bg-red-500", 5000);
             }
         }
         
@@ -222,7 +214,6 @@
                     const start = event.start.dateTime || event.start.date;
                     return `${new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${event.summary}`;
                 });
-                generateSummary();
             } catch (error) {
                 console.error("Error fetching Google Calendar events:", error);
                 googleCalendarEvents = [];
@@ -231,7 +222,12 @@
         }
         
         connectCalendarBtn.addEventListener('click', () => {
-            gapi.load('client:auth2', connectGoogleCalendar);
+            // Check for gapi before trying to load it
+            if (typeof gapi !== 'undefined') {
+                 gapi.load('client:auth2', connectGoogleCalendar);
+            } else {
+                 showMessage("Google API client library failed to load.", "bg-red-500", 5000);
+            }
         });
 
         function sortAssignments(assignments) {
@@ -249,7 +245,7 @@
         
         function listenForAssignments() {
             if (!isAuthReady || !db) { return; }
-            // Use the Firebase app ID and the user ID to define the path
+            // Use the Firebase app ID to define the Firestore path.
             const privateAssignmentsCollection = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`);
             const q = query(privateAssignmentsCollection, where("completed", "==", false));
             
@@ -288,7 +284,6 @@
                 return;
             }
             try {
-                // Update the document to mark it as completed
                 const assignmentRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`, docId);
                 await updateDoc(assignmentRef, { completed: true });
                 showMessage("Task marked as done!", "bg-[#9EE6C8]", 3000);
@@ -306,7 +301,6 @@
                 return;
             }
             try {
-                // Delete the document from Firestore
                 const assignmentRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`, docId);
                 await deleteDoc(assignmentRef);
                 if (showMsg) {
@@ -331,7 +325,6 @@
                     return;
                 }
                 try {
-                    // Add a new document to the user's private collection
                     const privateAssignmentsCollection = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`);
                     await addDoc(privateAssignmentsCollection, {
                         title: title,
@@ -456,8 +449,6 @@
         async function generateSummary() {
             loadingDiv.classList.remove('hidden');
             summaryOutputDiv.classList.add('hidden');
-            const targetDate = new Date();
-            const events = googleCalendarEvents;
             const sortedAssignments = sortAssignments(assignments);
             const tasksForLLM = sortedAssignments.length > 0 ? 
                 sortedAssignments.map(a => ({
@@ -465,10 +456,18 @@
                     deadline: new Date(a.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
                     difficulty: a.difficulty.charAt(0).toUpperCase() + a.difficulty.slice(1)
                 })) : [];
-            const eventsForLLM = events.length > 0 ?
-                events.map(e => `${e.time}: ${e.title}`) : [];
+            const eventsForLLM = googleCalendarEvents.length > 0 ?
+                googleCalendarEvents : [];
+            
+            // Check if there are any events or tasks to summarize
+            if (tasksForLLM.length === 0 && eventsForLLM.length === 0) {
+                 loadingDiv.classList.add('hidden');
+                 showMessage("Please add tasks or connect your calendar before generating a summary.", "bg-red-500", 5000);
+                 return;
+            }
+
             const prompt = `
-                Generate a concise, priority-based daily schedule summary for today based on the following data. The tasks and appointments are already sorted and formatted. Simply present them nicely.
+                Generate a concise, priority-based daily schedule summary for today based on the following data. The tasks and appointments are already sorted and formatted.
                 Today's Appointments:
                 ${JSON.stringify(eventsForLLM)}
                 Today's Tasks:
@@ -502,8 +501,7 @@
                     }
                 }
             };
-            const apiKey = geminiApiKey; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
             let attempts = 0;
             const maxAttempts = 5;
             while (attempts < maxAttempts) {
