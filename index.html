@@ -406,7 +406,7 @@
 
         <!-- Action Buttons Section -->
         <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color] flex flex-col md:flex-row gap-4 justify-between items-center">
-            <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
+            <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto" disabled>
                 Connect Google Calendar (Coming Soon)
             </button>
             <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
@@ -437,14 +437,29 @@
         // Import Firebase SDK modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
-        // --- IMPORTANT: Use global variables for configuration in this environment ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // --- IMPORTANT: CONFIGURE YOUR FIREBASE AND GOOGLE API KEYS HERE ---
+        // 1. Go to https://firebase.google.com/ and create a new project.
+        // 2. Add a web app to your project and copy the configuration object.
+        // 3. Paste the config object below.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzMgpUM9wgrSBWgk50AvmnBFE_f7IvJ_Q",
+            authDomain: "simplifly-efd5f.firebaseapp.com",
+            projectId: "simplifly-efd5f",
+            storageBucket: "simplifly-efd5f.firebasestorage.app",
+            messagingSenderId: "478943856947",
+            appId: "1:478943856947:web:07b95a8c0be06dd73c5646",
+            measurementId: "G-6MR8C52BQX"
+        };
+        // 4. Go to Google Cloud Console, enable the Gemini API, and create an API key.
+        // 5. Paste the Gemini API key below.
+        const GEMINI_API_KEY = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
+
+        // --- DO NOT EDIT BELOW THIS LINE ---
+        const appId = firebaseConfig.projectId || 'default-app-id';
         
-        // Google Calendar API Constants
+        // Google Calendar API Constants (left for future development)
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
@@ -523,6 +538,11 @@
          */
         async function initializeAppAndAuth() {
             try {
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith('YOUR_')) {
+                    showMessage("Please update your Firebase credentials in the script.", "bg-red-500", 8000);
+                    return;
+                }
+                
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
@@ -541,11 +561,7 @@
                     } else {
                         console.log("No user signed in. Attempting anonymous authentication.");
                         try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
+                            await signInAnonymously(auth);
                         } catch (error) {
                             console.error("Authentication failed:", error);
                             userIdSpan.textContent = 'Auth Failed';
@@ -1424,7 +1440,7 @@
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: summaryPrompt }] });
             const payload = { contents: chatHistory, generationConfig: { responseMimeType: "application/json" } };
-            const apiKey = ""; // API key will be provided by the Canvas environment.
+            const apiKey = GEMINI_API_KEY; // Using the provided Gemini API key
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             let attempts = 0;
             const maxAttempts = 5;
