@@ -9,10 +9,35 @@
     <style>
         /* Custom styles for fonts and layout */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@700&display=swap');
+        
+        /* Define color variables for easy theme switching */
+        :root {
+            --bg-color: #f8f8f5;
+            --main-bg-color: #ffffff;
+            --card-bg-color: #f9fafb;
+            --text-color: #333333;
+            --secondary-text-color: #4b5563;
+            --border-color: #e5e7eb;
+            --date-input-bg: #e0f2fe; /* Light blue, equivalent of sky-100 */
+        }
+
+        /* Dark Mode colors */
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --main-bg-color: #262626;
+            --card-bg-color: #1f1f1f;
+            --text-color: #e5e5e5;
+            --secondary-text-color: #a0a0a0;
+            --border-color: #374151;
+            --date-input-bg: #2d4154; /* Dark blue, for the date input */
+        }
+
         body { 
             font-family: 'Inter', sans-serif;
-            background-color: #f8f8f5;
-            background-image: linear-gradient(180deg, #FAFAF7 0%, #f4f4f0 100%);
+            background-color: var(--bg-color);
+            background-image: linear-gradient(180deg, var(--bg-color) 0%, var(--bg-color) 100%);
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
         }
         h1 { font-family: 'Poppins', sans-serif; font-weight: 700; }
         .difficulty-radio { display: none; }
@@ -26,61 +51,171 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Custom styles for the tab-like buttons */
+        .tab-button.active {
+            background-color: #4EA8DE;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .urgent-label {
+            display: inline-block;
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 9999px; /* full-rounded */
+            font-size: 0.75rem;
+            line-height: 1;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        /* Added style for collapsed subtasks */
+        .collapsed-subtasks {
+            display: none;
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 flex flex-col items-center min-h-screen text-[#333333]">
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen text-[--text-color]">
 
     <!-- Main Container -->
-    <div class="max-w-5xl w-full bg-white shadow-xl rounded-3xl p-6 md:p-10 border border-gray-100">
+    <div class="max-w-5xl w-full bg-[--main-bg-color] shadow-xl rounded-3xl p-6 md:p-10 border border-[--border-color] transition-colors">
         <!-- Header Section -->
         <div class="flex flex-col sm:flex-row items-center justify-between mb-4">
             <h1 class="text-3xl text-[#4EA8DE]">Simplifly</h1>
-            <p class="text-sm text-gray-400 mt-2 sm:mt-0">User ID: <span id="user-id" class="font-mono font-bold text-gray-600">Loading...</span></p>
+            <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+                <p class="text-sm text-[--secondary-text-color]">User ID: <span id="user-id" class="font-mono font-bold text-[--text-color]">Loading...</span></p>
+                <!-- Dark Mode Toggle Button -->
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
+                    <svg id="moon-icon" class="w-6 h-6 text-[#4EA8DE] hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                    </svg>
+                    <svg id="sun-icon" class="w-6 h-6 text-[#4EA8DE]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
-        <p class="text-lg text-gray-500 font-semibold mb-8 text-center sm:text-left">AI Schedule Organizer</p>
+        <p class="text-lg text-[--secondary-text-color] font-semibold mb-8 text-center sm:text-left">AI Schedule Organizer</p>
 
         <!-- Tasks Section -->
-        <div class="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
-            <h2 class="text-2xl font-semibold text-[#333333] mb-4">Tasks</h2>
-            <form id="add-assignment-form" class="grid gap-4 lg:grid-cols-6">
-                <input type="text" id="assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4EA8DE]">
+        <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color]">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-semibold text-[--text-color]">Tasks</h2>
+                <!-- Task Type Toggle Buttons -->
+                <div class="flex rounded-full bg-[--main-bg-color] shadow-md">
+                    <button id="toggle-general" class="tab-button active px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200">General Tasks</button>
+                    <button id="toggle-school" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">School Assignments</button>
+                    <!-- New Calendar Toggle Button -->
+                    <button id="toggle-calendar" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">Calendar</button>
+                </div>
+            </div>
+
+            <!-- Forms for adding different task types -->
+            <!-- General Task Form (Initially visible) -->
+            <form id="add-general-task-form" class="grid gap-4 lg:grid-cols-6">
+                <input type="text" id="general-assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                <div class="flex flex-col lg:col-span-1 space-y-2">
+                    <label for="general-parent-task" class="text-sm font-semibold text-[--text-color]">
+                        Parent Task (Optional):
+                    </label>
+                    <select id="general-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]"></select>
+                </div>
                 <div class="flex flex-col lg:col-span-2 space-y-2">
-                    <span class="text-sm font-semibold text-[#333333]">Difficulty:</span>
+                    <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
                     <div class="flex gap-2">
                         <input type="radio" id="low" name="difficulty-radio" value="low" class="difficulty-radio" checked>
-                        <label for="low" class="difficulty-label flex-1 p-3 rounded-xl border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out bg-white text-center">Low</label>
+                        <label for="low" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Low</label>
                         <input type="radio" id="medium" name="difficulty-radio" value="medium" class="difficulty-radio">
-                        <label for="medium" class="difficulty-label flex-1 p-3 rounded-xl border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out bg-white text-center">Medium</label>
+                        <label for="medium" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Medium</label>
                         <input type="radio" id="high" name="difficulty-radio" value="high" class="difficulty-radio">
-                        <label for="high" class="difficulty-label flex-1 p-3 rounded-xl border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out bg-white text-center">High</label>
+                        <label for="high" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">High</label>
                     </div>
                 </div>
                 <div class="flex flex-col lg:col-span-1 space-y-2">
-                    <label for="assignment-deadline" class="text-sm font-semibold text-[#333333]">Deadline:</label>
-                    <input type="date" id="assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-gray-300 bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-300 hover:bg-sky-200 transition-colors">
+                    <label for="general-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
+                    <input type="date" id="general-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                    <div class="flex items-center mt-2">
+                        <input type="checkbox" id="no-deadline-checkbox" class="h-4 w-4 text-[#4EA8DE] border-gray-300 rounded focus:ring-[#4EA8DE]">
+                        <label for="no-deadline-checkbox" class="ml-2 text-sm text-[--text-color]">No Deadline</label>
+                    </div>
                 </div>
                 <button type="submit" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
             </form>
-            <div id="assignments-list" class="space-y-3 text-sm text-[#333333] mt-4">
-                <p id="assignments-placeholder" class="text-gray-400 text-center italic mt-4">Add a task to get started.</p>
+
+            <!-- School Assignment Form (Initially hidden) -->
+            <div id="add-school-task-container" class="hidden">
+                <!-- Subject Selector & Add/Remove buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+                    <div class="flex-1">
+                        <label for="subject-select" class="text-sm font-semibold text-[--text-color]">Select Subject:</label>
+                        <select id="subject-select" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]"></select>
+                    </div>
+                    <div class="flex-1 flex gap-2">
+                        <div class="flex-1">
+                            <label for="new-subject-input" class="text-sm font-semibold text-[--text-color]">Or Add New Subject:</label>
+                            <input type="text" id="new-subject-input" placeholder="e.g. Physics" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                        </div>
+                    </div>
+                    <button id="add-subject-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Subject</button>
+                    <button id="remove-subject-btn" title="Remove selected subject" class="bg-gray-300 hover:bg-red-500 hover:text-white text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    </button>
+                </div>
+                
+                <form id="add-school-assignment-form" class="grid gap-4 lg:grid-cols-6">
+                    <input type="text" id="school-assignment-title" placeholder="Assignment Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                    <div class="flex flex-col lg:col-span-1 space-y-2">
+                        <label for="school-parent-task" class="text-sm font-semibold text-[--text-color]">
+                            Parent Task (Optional):
+                        </label>
+                        <select id="school-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]"></select>
+                    </div>
+                    <div class="flex flex-col lg:col-span-2 space-y-2">
+                        <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
+                        <div class="flex gap-2">
+                            <input type="radio" id="school-low" name="school-difficulty-radio" value="low" class="difficulty-radio" checked>
+                            <label for="school-low" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Low</label>
+                            <input type="radio" id="school-medium" name="school-difficulty-radio" value="medium" class="difficulty-radio">
+                            <label for="school-medium" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Medium</label>
+                            <input type="radio" id="school-high" name="school-difficulty-radio" value="high" class="difficulty-radio">
+                            <label for="school-high" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">High</label>
+                        </div>
+                    </div>
+                    <div class="flex flex-col lg:col-span-1 space-y-2">
+                        <label for="school-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
+                        <input type="date" id="school-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                    </div>
+                    <button type="submit" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
+                </form>
+            </div>
+
+            <!-- New: Calendar Events Display Container -->
+            <div id="calendar-events-container" class="hidden p-6 text-center text-[--secondary-text-color]">
+                <h3 class="text-2xl font-semibold mb-4 text-[--text-color]">Today's Calendar Events</h3>
+                <p id="calendar-placeholder" class="text-lg italic">Connect your Google Calendar to see your events here.</p>
+                <ul id="calendar-events-list" class="space-y-3 mt-4 text-left mx-auto max-w-xl"></ul>
+            </div>
+            
+            <div id="assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
+                <p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>
             </div>
         </div>
 
         <!-- Action Buttons Section -->
-        <div class="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col md:flex-row gap-4 justify-between items-center">
-             <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-[#333333] font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
-                 Connect Google Calendar
-             </button>
-             <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
-                 Generate Summary
-             </button>
+        <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color] flex flex-col md:flex-row gap-4 justify-between items-center">
+            <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
+                Connect Google Calendar
+            </button>
+            <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
+                Generate Summary
+            </button>
         </div>
 
         <!-- Loading and Summary Output Section -->
         <div id="loading" class="hidden flex justify-center items-center h-48">
-            <div class="w-9 h-9 rounded-full border-4 border-gray-200 border-l-[#4EA8DE] animate-spin"></div>
+            <div class="w-9 h-9 rounded-full border-4 border-[--border-color] border-l-[#4EA8DE] animate-spin"></div>
         </div>
-        <div id="summary-output" class="hidden min-h-[200px] bg-gray-100 border-l-4 border-l-[#4EA8DE] p-6 rounded-xl shadow-md transition-opacity">
+        <div id="summary-output" class="hidden min-h-[200px] bg-[--card-bg-color] border-l-4 border-l-[#4EA8DE] p-6 rounded-xl shadow-md transition-opacity">
         </div>
     </div>
     <div id="message-box" class="fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-full opacity-0 z-50 text-white"></div>
@@ -89,7 +224,7 @@
     <script type="module">
         // Import Firebase SDK modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
         // --- Your Application Configuration ---
@@ -103,12 +238,9 @@
             appId: "1:478943856947:web:07b95a8c0be06dd73c5646",
             measurementId: "G-6MR8C52BQX"
         };
-        const geminiApiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
         const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
+        const initialAuthToken = null; // No initial auth token needed for public deployment.
         
-        // Ensure you have configured the "Authorized JavaScript origins" in the Google Cloud Console for your Client ID
-        // to include your GitHub Pages URL, for example: 'https://yourusername.github.io'
-
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
         
@@ -117,24 +249,54 @@
         let assignments = [];
         let isAuthReady = false;
         let googleCalendarEvents = [];
+        let taskMode = 'general'; // new state variable for task type
+        
+        // Constants for urgent logic
+        const VERY_SOON_DAYS = 3;
+        const SEMI_SOON_DAYS = 7;
 
         // DOM elements
         const userIdSpan = document.getElementById('user-id');
-        const addAssignmentForm = document.getElementById('add-assignment-form');
-        const assignmentTitleInput = document.getElementById('assignment-title');
-        const assignmentDeadlineInput = document.getElementById('assignment-deadline');
+        const generalTaskForm = document.getElementById('add-general-task-form');
+        const schoolAssignmentForm = document.getElementById('add-school-assignment-form');
+        const generalAssignmentTitleInput = document.getElementById('general-assignment-title');
+        const generalAssignmentDeadlineInput = document.getElementById('general-assignment-deadline');
+        const noDeadlineCheckbox = document.getElementById('no-deadline-checkbox');
+        const schoolAssignmentTitleInput = document.getElementById('school-assignment-title');
+        const schoolAssignmentDeadlineInput = document.getElementById('school-assignment-deadline');
         const assignmentsListDiv = document.getElementById('assignments-list');
         const connectCalendarBtn = document.getElementById('connect-calendar-btn');
         const generateBtn = document.getElementById('generate-btn');
         const loadingDiv = document.getElementById('loading');
         const summaryOutputDiv = document.getElementById('summary-output');
         const messageBox = document.getElementById('message-box');
+        const toggleGeneralBtn = document.getElementById('toggle-general');
+        const toggleSchoolBtn = document.getElementById('toggle-school');
+        const toggleCalendarBtn = document.getElementById('toggle-calendar');
+        const schoolTaskContainer = document.getElementById('add-school-task-container');
+        const calendarEventsContainer = document.getElementById('calendar-events-container');
+        const calendarEventsList = document.getElementById('calendar-events-list');
+        const calendarPlaceholder = document.getElementById('calendar-placeholder');
+        const subjectSelect = document.getElementById('subject-select');
+        const newSubjectInput = document.getElementById('new-subject-input');
+        const addSubjectBtn = document.getElementById('add-subject-btn');
+        const removeSubjectBtn = document.getElementById('remove-subject-btn');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const moonIcon = document.getElementById('moon-icon');
+        const sunIcon = document.getElementById('sun-icon');
+        const generalParentTaskSelect = document.getElementById('general-parent-task');
+        const schoolParentTaskSelect = document.getElementById('school-parent-task');
         
+        // State for expanded/collapsed parent tasks - new feature
+        const expandedParentTasks = new Set();
+
+
         // Initialize Firebase and set up authentication
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            const appId = firebaseConfig.projectId; // Use project ID for a public app
             
             // Listen for authentication state changes.
             onAuthStateChanged(auth, async (user) => {
@@ -143,11 +305,16 @@
                     userIdSpan.textContent = userId;
                     isAuthReady = true;
                     listenForAssignments();
+                    fetchSubjects();
                     generateBtn.disabled = false;
                 } else {
                     console.log("No user signed in. Attempting anonymous authentication.");
                     try {
-                        await signInAnonymously(auth);
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
                     } catch (error) {
                         console.error("Authentication failed:", error);
                         userIdSpan.textContent = 'Auth Failed';
@@ -160,6 +327,86 @@
             userIdSpan.textContent = 'Init Failed';
             showMessage("Firebase initialization failed. Check the console.", "bg-red-500", 5000);
         }
+
+        // Dark mode toggle logic
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeIcons(isDarkMode);
+        });
+
+        // Function to update the visibility of theme icons
+        function updateThemeIcons(isDarkMode) {
+            if (isDarkMode) {
+                moonIcon.classList.remove('hidden');
+                sunIcon.classList.add('hidden');
+            } else {
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+            }
+        }
+
+        // Apply theme on page load based on localStorage
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            updateThemeIcons(true);
+        } else {
+            updateThemeIcons(false);
+        }
+
+
+        // Refactored UI toggling logic into a single function for cleanliness
+        function setTaskMode(mode) {
+            // Deactivate all buttons and hide all containers
+            [toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn].forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('text-[--secondary-text-color]');
+            });
+            [generalTaskForm, schoolTaskContainer, assignmentsListDiv, calendarEventsContainer].forEach(container => {
+                container.classList.add('hidden');
+            });
+
+            // Activate the correct button and show the correct container
+            if (mode === 'general') {
+                taskMode = 'general';
+                toggleGeneralBtn.classList.add('active');
+                toggleGeneralBtn.classList.remove('text-[--secondary-text-color]');
+                generalTaskForm.classList.remove('hidden');
+                assignmentsListDiv.classList.remove('hidden');
+                renderAssignments(assignments);
+            } else if (mode === 'school') {
+                taskMode = 'school';
+                toggleSchoolBtn.classList.add('active');
+                toggleSchoolBtn.classList.remove('text-[--secondary-text-color]');
+                schoolTaskContainer.classList.remove('hidden');
+                assignmentsListDiv.classList.remove('hidden');
+                renderAssignments(assignments);
+            } else if (mode === 'calendar') {
+                taskMode = 'calendar';
+                toggleCalendarBtn.classList.add('active');
+                toggleCalendarBtn.classList.remove('text-[--secondary-text-color]');
+                calendarEventsContainer.classList.remove('hidden');
+                renderCalendarEvents(googleCalendarEvents);
+            }
+        }
+
+        // Add event listeners for the toggle buttons
+        toggleGeneralBtn.addEventListener('click', () => setTaskMode('general'));
+        toggleSchoolBtn.addEventListener('click', () => setTaskMode('school'));
+        toggleCalendarBtn.addEventListener('click', () => setTaskMode('calendar'));
+
+        // Toggle deadline input based on checkbox
+        noDeadlineCheckbox.addEventListener('change', (e) => {
+            generalAssignmentDeadlineInput.disabled = e.target.checked;
+            if (e.target.checked) {
+                generalAssignmentDeadlineInput.value = '';
+                generalAssignmentDeadlineInput.placeholder = 'No deadline';
+            } else {
+                generalAssignmentDeadlineInput.placeholder = '';
+            }
+        });
 
         function showMessage(text, bgColor, duration) {
             messageBox.textContent = text;
@@ -195,6 +442,7 @@
             if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
                 console.warn("Not signed in to Google Calendar. Skipping event fetch.");
                 googleCalendarEvents = [];
+                renderCalendarEvents(googleCalendarEvents);
                 return;
             }
             const now = new Date();
@@ -214,63 +462,203 @@
                     const start = event.start.dateTime || event.start.date;
                     return `${new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${event.summary}`;
                 });
+                renderCalendarEvents(googleCalendarEvents);
             } catch (error) {
                 console.error("Error fetching Google Calendar events:", error);
                 googleCalendarEvents = [];
                 showMessage("Error fetching calendar events.", "bg-red-500", 5000);
+                renderCalendarEvents(googleCalendarEvents);
             }
         }
         
         connectCalendarBtn.addEventListener('click', () => {
             // Check for gapi before trying to load it
             if (typeof gapi !== 'undefined') {
-                 gapi.load('client:auth2', connectGoogleCalendar);
+                gapi.load('client:auth2', connectGoogleCalendar);
             } else {
-                 showMessage("Google API client library failed to load.", "bg-red-500", 5000);
+                showMessage("Google API client library failed to load.", "bg-red-500", 5000);
             }
         });
 
+        // Function to render the fetched calendar events
+        function renderCalendarEvents(events) {
+            calendarEventsList.innerHTML = '';
+            if (events.length === 0) {
+                calendarPlaceholder.textContent = 'No calendar events for today.';
+                calendarPlaceholder.classList.remove('hidden');
+            } else {
+                calendarPlaceholder.classList.add('hidden');
+                events.forEach(event => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'flex items-center gap-2 p-3 rounded-xl border border-[--border-color] bg-[--main-bg-color] text-[--text-color] shadow-sm';
+                    listItem.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-[#4EA8DE] flex-shrink-0"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                        <span>${event}</span>
+                    `;
+                    calendarEventsList.appendChild(listItem);
+                });
+            }
+        }
+
+        // Function to fetch and render subjects for the dropdown
+        async function fetchSubjects() {
+            if (!isAuthReady || !db) { return; }
+            const subjectsCollection = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
+            try {
+                const querySnapshot = await getDocs(subjectsCollection);
+                subjectSelect.innerHTML = ''; // Clear previous options
+                let hasSubjects = false;
+                querySnapshot.forEach((doc) => {
+                    const subject = doc.data().name;
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                    hasSubjects = true;
+                });
+                if (!hasSubjects) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No subjects added yet';
+                    option.disabled = true;
+                    option.selected = true;
+                    subjectSelect.appendChild(option);
+                }
+            } catch (e) {
+                console.error("Error fetching subjects: ", e);
+                showMessage("Error fetching subjects.", "bg-red-500", 5000);
+            }
+        }
+
+        // Add a new subject
+        addSubjectBtn.addEventListener('click', async () => {
+            const newSubject = newSubjectInput.value.trim();
+            if (newSubject) {
+                if (!db) {
+                    showMessage("Database functions are disabled.", "bg-gray-500", 5000);
+                    return;
+                }
+                try {
+                    const subjectsCollection = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
+                    await addDoc(subjectsCollection, { name: newSubject });
+                    newSubjectInput.value = '';
+                    fetchSubjects(); // Refresh the dropdown
+                    showMessage("Subject added successfully!", "bg-[#9EE6C8]", 3000);
+                } catch (e) {
+                    console.error("Error adding subject: ", e);
+                    showMessage("Error adding subject. Check the console.", "bg-red-500", 5000);
+                }
+            } else {
+                showMessage("Please enter a subject name.", "bg-red-500", 5000);
+            }
+        });
+
+        // Remove a subject
+        removeSubjectBtn.addEventListener('click', async () => {
+            const subjectToRemove = subjectSelect.value;
+            if (subjectToRemove === 'No subjects added yet' || !subjectToRemove) {
+                showMessage("Please select a valid subject to remove.", "bg-red-500", 3000);
+                return;
+            }
+            if (!db) {
+                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
+                return;
+            }
+
+            try {
+                const assignmentsRef = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+                const q = query(assignmentsRef, where('subject', '==', subjectToRemove));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    showMessage("Cannot remove subject: it still has assignments. Please remove or update the assignments first.", "bg-red-500", 5000);
+                    return;
+                }
+
+                const subjectsRef = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
+                const subjectQuery = query(subjectsRef, where('name', '==', subjectToRemove));
+                const subjectSnapshot = await getDocs(subjectQuery);
+                
+                if (!subjectSnapshot.empty) {
+                    const docId = subjectSnapshot.docs[0].id;
+                    const subjectDocRef = doc(subjectsRef, docId);
+                    await deleteDoc(subjectDocRef);
+                    fetchSubjects(); // Refresh the dropdown
+                    showMessage(`Subject '${subjectToRemove}' removed successfully!`, "bg-[#333333]", 3000);
+                }
+
+            } catch (e) {
+                console.error("Error removing subject: ", e);
+                showMessage("Error removing subject. Check the console.", "bg-red-500", 5000);
+            }
+        });
+        
         function sortAssignments(assignments) {
-            // Sort by deadline, then by difficulty (High to Low)
             const difficultyMap = { 'high': 3, 'medium': 2, 'low': 1 };
             return assignments.sort((a, b) => {
-                const deadlineA = new Date(a.deadline);
-                const deadlineB = new Date(b.deadline);
+                // If a has no deadline and b does, a comes last
+                if (!a.deadline && b.deadline) return 1;
+                // If b has no deadline and a does, b comes last
+                if (a.deadline && !b.deadline) return -1;
+                // If both have no deadline, their order doesn't matter (maintain original order)
+                if (!a.deadline && !b.deadline) return 0;
+                
+                // Sort by deadline, then by difficulty (High to Low)
+                const deadlineA = new Date(a.deadline + 'T12:00:00');
+                const deadlineB = new Date(b.deadline + 'T12:00:00');
                 if (deadlineA.getTime() !== deadlineB.getTime()) {
                     return deadlineA.getTime() - deadlineB.getTime();
                 }
                 return difficultyMap[b.difficulty] - difficultyMap[a.difficulty];
             });
         }
+
+        // Function to populate the parent task dropdowns
+        function populateParentTaskSelect(tasks) {
+            const generalTasks = tasks.filter(t => t.taskType === 'general' && !t.parentTaskId);
+            const schoolAssignments = tasks.filter(t => t.taskType === 'school' && !t.parentTaskId);
+
+            function createOptions(selectElement, taskList) {
+                selectElement.innerHTML = '<option value="">(None)</option>';
+                taskList.forEach(task => {
+                    const option = document.createElement('option');
+                    option.value = task.id;
+                    option.textContent = task.title;
+                    selectElement.appendChild(option);
+                });
+            }
+
+            createOptions(generalParentTaskSelect, generalTasks);
+            createOptions(schoolParentTaskSelect, schoolAssignments);
+        }
         
+        // Refactored listenForAssignments to handle subtasks
         function listenForAssignments() {
             if (!isAuthReady || !db) { return; }
-            // Use the Firebase app ID to define the Firestore path.
-            const privateAssignmentsCollection = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`);
-            const q = query(privateAssignmentsCollection, where("completed", "==", false));
+            const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+            const q = query(privateAssignmentsCollection);
             
-            // Set up a real-time listener
             onSnapshot(q, (querySnapshot) => {
                 const overdueTasks = [];
                 assignments = [];
                 if (querySnapshot.empty) {
                     renderAssignments(assignments);
+                    populateParentTaskSelect([]);
                 } else {
                     const now = new Date();
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
-                        const deadlineDate = new Date(data.deadline);
-                        if (deadlineDate < now) {
-                            // Collect tasks that are overdue to be removed
+                        
+                        if (data.deadline && new Date(data.deadline + 'T12:00:00') < now && !data.completed) {
                             overdueTasks.push(doc.id);
-                        } else {
-                            assignments.push({ ...data, id: doc.id });
                         }
+                        assignments.push({ ...data, id: doc.id });
                     });
-                    // Remove overdue tasks
                     overdueTasks.forEach(id => {
-                        removeAssignment(id, false); // Don't show a message for auto-removal
+                        removeAssignment(id, false);
                     });
+                    
+                    populateParentTaskSelect(assignments.filter(t => !t.completed));
                     renderAssignments(assignments);
                 }
             }, (error) => {
@@ -278,15 +666,30 @@
             });
         }
         
-        async function markAsDone(docId) {
+        async function toggleCompletion(docId) {
             if (!db) {
                 showMessage("Database functions are disabled.", "bg-gray-500", 5000);
                 return;
             }
             try {
-                const assignmentRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`, docId);
-                await updateDoc(assignmentRef, { completed: true });
-                showMessage("Task marked as done!", "bg-[#9EE6C8]", 3000);
+                const task = assignments.find(t => t.id === docId);
+                if (!task) {
+                    showMessage("Task not found.", "bg-red-500", 5000);
+                    return;
+                }
+                
+                // If marking as complete, check for incomplete subtasks
+                if (!task.completed) {
+                    const subtasks = assignments.filter(t => t.parentTaskId === docId && !t.completed);
+                    if (subtasks.length > 0) {
+                        showMessage("Please complete all subtasks first.", "bg-red-500", 5000);
+                        return;
+                    }
+                }
+                
+                const assignmentRef = doc(db, `artifacts/${appId}/users/${userId}/assignments`, docId);
+                await updateDoc(assignmentRef, { completed: !task.completed });
+                showMessage(`Task marked as ${!task.completed ? 'done' : 'incomplete'}!`, "bg-[#9EE6C8]", 3000);
             } catch (e) {
                 console.error("Error updating document: ", e);
                 showMessage("Error marking task as done. Check the console.", "bg-red-500", 5000);
@@ -301,7 +704,7 @@
                 return;
             }
             try {
-                const assignmentRef = doc(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`, docId);
+                const assignmentRef = doc(db, `artifacts/${appId}/users/${userId}/assignments`, docId);
                 await deleteDoc(assignmentRef);
                 if (showMsg) {
                     showMessage("Task removed!", "bg-[#333333]", 3000);
@@ -314,72 +717,266 @@
             }
         }
         
-        addAssignmentForm.addEventListener('submit', async (e) => {
+        generalTaskForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const title = assignmentTitleInput.value;
-            const deadline = assignmentDeadlineInput.value;
+            const title = generalAssignmentTitleInput.value;
+            const deadline = generalAssignmentDeadlineInput.value;
             const difficulty = document.querySelector('input[name="difficulty-radio"]:checked').value;
-            if (title && deadline && difficulty) {
-                if (!db) {
-                    showMessage("Database functions are disabled.", "bg-gray-500", 5000);
+            const parentTaskId = generalParentTaskSelect.value || null;
+            
+            if (!title) {
+                showMessage("Please enter a task title.", "bg-red-500", 5000);
+                return;
+            }
+            if (!deadline && !noDeadlineCheckbox.checked) {
+                showMessage("Please enter a deadline or select 'No Deadline'.", "bg-red-500", 5000);
+                return;
+            }
+            
+            if (parentTaskId && deadline) {
+                const parentTask = assignments.find(t => t.id === parentTaskId);
+                if (parentTask && parentTask.deadline && new Date(deadline) > new Date(parentTask.deadline)) {
+                    showMessage("Subtask deadline cannot be after the parent task's deadline.", "bg-red-500", 5000);
                     return;
                 }
-                try {
-                    const privateAssignmentsCollection = collection(db, `artifacts/${firebaseConfig.appId}/users/${userId}/assignments`);
-                    await addDoc(privateAssignmentsCollection, {
-                        title: title,
-                        deadline: deadline,
-                        difficulty: difficulty,
-                        completed: false,
-                        createdAt: serverTimestamp()
-                    });
-                    assignmentTitleInput.value = '';
-                    assignmentDeadlineInput.value = '';
-                    showMessage("Task added successfully!", "bg-[#9EE6C8]", 3000);
-                } catch (e) {
-                    console.error("Error adding document: ", e);
-                    showMessage("Error adding task. Check the console for details.", "bg-red-500", 5000);
+            }
+
+            if (!db) {
+                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
+                return;
+            }
+            try {
+                const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+                await addDoc(privateAssignmentsCollection, {
+                    title: title,
+                    deadline: deadline || null,
+                    difficulty: difficulty,
+                    taskType: 'general',
+                    parentTaskId: parentTaskId,
+                    completed: false,
+                    createdAt: serverTimestamp()
+                });
+                generalAssignmentTitleInput.value = '';
+                generalAssignmentDeadlineInput.value = '';
+                noDeadlineCheckbox.checked = false;
+                generalAssignmentDeadlineInput.disabled = false;
+                showMessage("General task added successfully!", "bg-[#9EE6C8]", 3000);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showMessage("Error adding task. Check the console for details.", "bg-red-500", 5000);
+            }
+        });
+
+        schoolAssignmentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = schoolAssignmentTitleInput.value;
+            const deadline = schoolAssignmentDeadlineInput.value;
+            const difficulty = document.querySelector('input[name="school-difficulty-radio"]:checked').value;
+            const subject = subjectSelect.value;
+            const parentTaskId = schoolParentTaskSelect.value || null;
+
+            if (!title || !deadline || !difficulty || !subject) {
+                showMessage("Please fill out all fields to add an assignment.", "bg-red-500", 5000);
+                return;
+            }
+
+            if (parentTaskId && deadline) {
+                const parentTask = assignments.find(t => t.id === parentTaskId);
+                if (parentTask && parentTask.deadline && new Date(deadline) > new Date(parentTask.deadline)) {
+                    showMessage("Subtask deadline cannot be after the parent task's deadline.", "bg-red-500", 5000);
+                    return;
                 }
-            } else {
-                showMessage("Please fill out all fields to add a task.", "bg-red-500", 5000);
+            }
+            
+            if (!db) {
+                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
+                return;
+            }
+            try {
+                const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+                await addDoc(privateAssignmentsCollection, {
+                    title: title,
+                    deadline: deadline,
+                    difficulty: difficulty,
+                    subject: subject,
+                    taskType: 'school',
+                    parentTaskId: parentTaskId,
+                    completed: false,
+                    createdAt: serverTimestamp()
+                });
+                schoolAssignmentTitleInput.value = '';
+                schoolAssignmentDeadlineInput.value = '';
+                showMessage("School assignment added successfully!", "bg-[#9EE6C8]", 3000);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showMessage("Error adding assignment. Check the console for details.", "bg-red-500", 5000);
             }
         });
         
         function renderAssignments(assignmentsToRender) {
             assignmentsListDiv.innerHTML = '';
             if (assignmentsToRender.length === 0) {
-                assignmentsListDiv.innerHTML = '<p class="text-gray-400 text-center italic mt-4">Add a task to get started.</p>';
-            } else {
-                // Sort assignments before rendering
-                const sortedAssignments = sortAssignments(assignmentsToRender);
-                sortedAssignments.forEach((data) => {
-                    const assignmentEl = document.createElement('div');
-                    assignmentEl.className = 'flex justify-between items-center p-3 bg-white rounded-xl border border-gray-200 shadow-sm transition-shadow hover:shadow-md';
-                    const deadline = new Date(data.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                    const text = document.createElement('div');
-                    text.innerHTML = `
-                        <span class="font-bold">${data.title}</span> 
-                        <span class="text-gray-600 ml-2">(<span class="font-semibold">Due:</span> ${deadline}, <span class="font-semibold">Difficulty:</span> ${data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1)})</span>
-                    `;
-                    const buttonContainer = document.createElement('div');
-                    buttonContainer.className = 'flex gap-2 items-center';
-                    const doneBtn = document.createElement('button');
-                    doneBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle text-[#4EA8DE]"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"></path><path d="m9 11 3 3L22 4"></path></svg>`;
-                    doneBtn.title = "Mark as done";
-                    doneBtn.className = 'bg-gray-100 hover:bg-gray-200 text-[#333333] font-medium py-1 px-1.5 rounded-lg text-xs transition-colors';
-                    doneBtn.onclick = () => markAsDone(data.id);
-                    const removeBtn = document.createElement('button');
-                    removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[#4EA8DE]"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>`;
-                    removeBtn.title = "Remove task";
-                    removeBtn.className = 'bg-gray-100 hover:bg-gray-200 text-[#333333] font-medium py-1 px-1.5 rounded-lg text-xs transition-colors';
-                    removeBtn.onclick = () => removeAssignment(data.id);
-                    buttonContainer.appendChild(doneBtn);
-                    buttonContainer.appendChild(removeBtn);
-                    assignmentEl.appendChild(text);
-                    assignmentEl.appendChild(buttonContainer);
-                    assignmentsListDiv.appendChild(assignmentEl);
+                assignmentsListDiv.innerHTML = '<p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>';
+                return;
+            }
+            
+            // Separate completed and incomplete tasks
+            const activeAssignments = assignmentsToRender.filter(t => !t.completed);
+            const completedAssignments = assignmentsToRender.filter(t => t.completed);
+
+            // Sort and group active tasks
+            const sortedActiveAssignments = sortAssignments(activeAssignments);
+            const activeTopLevelTasks = sortedActiveAssignments.filter(task => !task.parentTaskId);
+            
+            // Group active tasks by type/subject
+            const groupedActiveAssignments = {};
+            activeTopLevelTasks.forEach(task => {
+                const key = task.taskType === 'school' ? task.subject : 'General Tasks';
+                if (!groupedActiveAssignments[key]) {
+                    groupedActiveAssignments[key] = [];
+                }
+                groupedActiveAssignments[key].push(task);
+            });
+
+            // Render Active Tasks
+            for (const key in groupedActiveAssignments) {
+                const groupTitle = document.createElement('h3');
+                groupTitle.className = 'text-lg font-semibold text-[--text-color] mt-4 mb-2';
+                groupTitle.textContent = key;
+                assignmentsListDiv.appendChild(groupTitle);
+                
+                groupedActiveAssignments[key].forEach((taskData) => {
+                    const taskElement = createAssignmentElement(taskData, assignmentsToRender);
+                    assignmentsListDiv.appendChild(taskElement);
+                    // Render subtasks if the parent is expanded
+                    if (expandedParentTasks.has(taskData.id)) {
+                        const subtasks = sortedActiveAssignments.filter(sub => sub.parentTaskId === taskData.id);
+                        subtasks.forEach(subtaskData => {
+                            const subtaskElement = createAssignmentElement(subtaskData, assignmentsToRender, true);
+                            assignmentsListDiv.appendChild(subtaskElement);
+                        });
+                    }
                 });
             }
+            
+            // If there are completed tasks, add a separate section for them
+            if (completedAssignments.length > 0) {
+                const completedTitle = document.createElement('h3');
+                completedTitle.className = 'text-lg font-semibold text-[--secondary-text-color] mt-6 mb-2';
+                completedTitle.textContent = 'Completed Tasks';
+                assignmentsListDiv.appendChild(completedTitle);
+                
+                // Group and render completed tasks
+                const sortedCompletedAssignments = sortAssignments(completedAssignments);
+                sortedCompletedAssignments.forEach(taskData => {
+                    const taskElement = createAssignmentElement(taskData, assignmentsToRender);
+                    assignmentsListDiv.appendChild(taskElement);
+                });
+            }
+        }
+
+        // Renamed and updated function to take `allAssignments` as an argument for parent/subtask logic
+        function createAssignmentElement(data, allAssignments, isSubtask = false) {
+            const assignmentEl = document.createElement('div');
+            
+            const isParent = allAssignments.some(t => t.parentTaskId === data.id);
+            const isExpanded = expandedParentTasks.has(data.id);
+            
+            const baseClass = 'flex justify-between items-center p-3 rounded-xl border shadow-sm transition-shadow hover:shadow-md border-[--border-color]';
+            const bgColor = data.completed ? 'bg-[#c5ffdc] dark:bg-[#2e5e49] opacity-90' : 'bg-[--main-bg-color]';
+            const mlClass = isSubtask ? 'ml-6' : '';
+            assignmentEl.className = `${baseClass} ${bgColor} ${mlClass}`;
+            
+            let isUrgent = false;
+            let deadlineString = 'No Deadline';
+            if (data.deadline) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const deadline = new Date(data.deadline + 'T12:00:00'); // Fix for timezone offset
+                deadlineString = deadline.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                const timeDifference = deadline.getTime() - today.getTime();
+                const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                
+                if (daysDifference <= VERY_SOON_DAYS || (data.difficulty === 'high' && daysDifference <= SEMI_SOON_DAYS)) {
+                    isUrgent = true;
+                }
+            }
+
+            // Left side content: title, subtask indicator, and labels
+            const leftContent = document.createElement('div');
+            leftContent.className = 'flex items-center space-x-2';
+            
+            // Add expand/collapse button for parent tasks
+            if (isParent && !data.completed) {
+                const collapseBtn = document.createElement('button');
+                collapseBtn.className = `p-1 rounded-full text-[--secondary-text-color] hover:bg-[--card-bg-color] transition-colors`;
+                collapseBtn.innerHTML = isExpanded 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>`;
+                collapseBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (isExpanded) {
+                        expandedParentTasks.delete(data.id);
+                    } else {
+                        expandedParentTasks.add(data.id);
+                    }
+                    renderAssignments(allAssignments);
+                };
+                leftContent.appendChild(collapseBtn);
+            }
+            
+            // Task title and labels
+            const titleSpan = document.createElement('span');
+            // Check for dark mode to apply the correct text color for completed tasks
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const completedTextColorClass = isDarkMode ? 'completed-text-dark' : 'completed-text-light';
+            titleSpan.className = `font-bold ${data.completed ? `line-through ${completedTextColorClass}` : ''}`;
+            titleSpan.textContent = data.title;
+            leftContent.appendChild(titleSpan);
+
+            // Right side content: deadline, difficulty, and action buttons
+            const rightContent = document.createElement('div');
+            rightContent.className = 'flex gap-4 items-center flex-shrink-0';
+
+            const infoSpan = document.createElement('span');
+            infoSpan.className = `ml-2 text-xs text-[--secondary-text-color] font-medium whitespace-nowrap`;
+            infoSpan.innerHTML = `(<span class="font-semibold">Due:</span> ${deadlineString}, <span class="font-semibold">Difficulty:</span> ${data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1)})`;
+            rightContent.appendChild(infoSpan);
+
+            // Action buttons container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'flex gap-2 items-center';
+            
+            // Done/Undone Button (Corrected icons)
+            const doneBtn = document.createElement('button');
+            doneBtn.innerHTML = data.completed
+                ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2 text-[#4EA8DE]"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"/><path d="m9 12 2 2 4-4"/></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle text-[#4EA8DE]"><circle cx="12" cy="12" r="10"/></svg>`;
+            doneBtn.title = data.completed ? "Mark as incomplete" : "Mark as done";
+            doneBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium p-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
+            doneBtn.onclick = (e) => {
+                e.stopPropagation();
+                toggleCompletion(data.id);
+            };
+
+            // Remove button (Corrected SVG)
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[#4EA8DE]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
+            removeBtn.title = "Remove task";
+            removeBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium p-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                removeAssignment(data.id);
+            };
+            
+            buttonContainer.appendChild(doneBtn);
+            buttonContainer.appendChild(removeBtn);
+            
+            assignmentEl.appendChild(leftContent);
+            assignmentEl.appendChild(rightContent);
+            assignmentEl.appendChild(buttonContainer);
+
+            return assignmentEl;
         }
         
         generateBtn.addEventListener('click', generateSummary);
@@ -388,15 +985,18 @@
             summaryOutputDiv.innerHTML = '';
             const mainContainer = document.createElement('div');
             mainContainer.className = 'flex flex-col gap-6';
+
+            // Appointments Section
             const appointmentsSection = document.createElement('div');
-            appointmentsSection.className = 'bg-white p-6 rounded-xl shadow-md';
+            appointmentsSection.className = 'bg-[--main-bg-color] p-6 rounded-xl shadow-md border border-[--border-color]';
             const appointmentsTitle = document.createElement('h3');
-            appointmentsTitle.className = 'text-xl font-semibold text-[#333333] mb-4';
+            appointmentsTitle.className = 'text-xl font-semibold text-[--text-color] mb-4';
             appointmentsTitle.textContent = `Today's Appointments`;
             appointmentsSection.appendChild(appointmentsTitle);
+
             if (summaryData.appointments && summaryData.appointments.length > 0) {
                 const appointmentsList = document.createElement('ul');
-                appointmentsList.className = 'space-y-2 text-[#333333]';
+                appointmentsList.className = 'space-y-2 text-[--text-color]';
                 summaryData.appointments.forEach(item => {
                     const listItem = document.createElement('li');
                     listItem.className = 'flex items-center gap-2';
@@ -406,73 +1006,191 @@
                 appointmentsSection.appendChild(appointmentsList);
             } else {
                 const placeholder = document.createElement('p');
-                placeholder.className = 'text-gray-500 italic';
+                placeholder.className = 'text-[--secondary-text-color] italic';
                 placeholder.textContent = 'No calendar events.';
                 appointmentsSection.appendChild(placeholder);
             }
             mainContainer.appendChild(appointmentsSection);
-            const assignmentsSection = document.createElement('div');
-            assignmentsSection.className = 'bg-white p-6 rounded-xl shadow-md';
-            const assignmentsTitle = document.createElement('h3');
-            assignmentsTitle.className = 'text-xl font-semibold text-[#333333] mb-4';
-            assignmentsTitle.textContent = `Today's Tasks`;
-            assignmentsSection.appendChild(assignmentsTitle);
+
+            // Tasks Section
+            const tasksSection = document.createElement('div');
+            tasksSection.className = 'bg-[--main-bg-color] p-6 rounded-xl shadow-md border border-[--border-color]';
+            const tasksTitle = document.createElement('h3');
+            tasksTitle.className = 'text-xl font-semibold text-[--text-color] mb-4';
+            tasksTitle.textContent = `Today's Tasks`;
+            tasksSection.appendChild(tasksTitle);
+
             if (summaryData.tasks && summaryData.tasks.length > 0) {
-                const assignmentsList = document.createElement('ol');
-                assignmentsList.className = 'space-y-2 text-[#333333]';
-                summaryData.tasks.forEach((item, index) => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'flex justify-between items-center';
-                    listItem.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold">${index + 1}.</span> 
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list text-[#4EA8DE]"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
-                            <span class="font-bold text-[#333333]">${item.title}</span>
-                        </div>
-                        <span class="text-xs text-gray-500 font-medium">
-                            <span class="text-gray-600">Due:</span> ${item.deadline} • <span class="text-gray-600">Difficulty:</span> ${item.difficulty}
-                        </span>
-                    `;
-                    assignmentsList.appendChild(listItem);
+                const tasksList = document.createElement('ol');
+                tasksList.className = 'space-y-2 text-[--text-color] list-decimal list-inside';
+                
+                const topLevelTasks = summaryData.tasks.filter(t => !t.parentTaskId);
+                const subtasks = summaryData.tasks.filter(t => t.parentTaskId);
+
+                topLevelTasks.forEach((item, index) => {
+                    const listItem = createSummaryTaskElement(item, index, assignments);
+                    tasksList.appendChild(listItem);
+
+                    subtasks.filter(sub => sub.parentTaskId === item.id).forEach(subtaskItem => {
+                        const subtaskListItem = createSummaryTaskElement(subtaskItem, null, assignments, true);
+                        tasksList.appendChild(subtaskListItem);
+                    });
                 });
-                assignmentsSection.appendChild(assignmentsList);
+
+                tasksSection.appendChild(tasksList);
             } else {
                 const placeholder = document.createElement('p');
-                placeholder.className = 'text-gray-500 italic';
+                placeholder.className = 'text-[--secondary-text-color] italic';
                 placeholder.textContent = 'No tasks found.';
-                assignmentsSection.appendChild(placeholder);
+                tasksSection.appendChild(placeholder);
             }
-            mainContainer.appendChild(assignmentsSection);
+            mainContainer.appendChild(tasksSection);
             summaryOutputDiv.appendChild(mainContainer);
         }
+
+        function createSummaryTaskElement(item, index, allAssignments, isSubtask = false) {
+            const listItem = document.createElement('li');
+            const mlClass = isSubtask ? 'ml-6' : '';
+            listItem.className = `flex justify-between items-start space-x-4 ${mlClass}`;
+            
+            const taskToMark = allAssignments.find(a => a.title === item.title);
+            const isCompleted = taskToMark ? taskToMark.completed : false;
+
+            const leftContent = document.createElement('div');
+            leftContent.className = 'flex items-center flex-grow space-x-2';
+            
+            if (index !== null) {
+                const taskNumber = document.createElement('span');
+                taskNumber.className = 'font-bold flex-shrink-0';
+                taskNumber.textContent = `${index + 1}.`;
+                leftContent.appendChild(taskNumber);
+            }
+            
+            const taskIcon = document.createElement('svg');
+            taskIcon.className = 'lucide lucide-clipboard-list text-[#4EA8DE] flex-shrink-0';
+            taskIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            taskIcon.setAttribute('width', '16');
+            taskIcon.setAttribute('height', '16');
+            taskIcon.setAttribute('viewBox', '0 0 24 24');
+            taskIcon.setAttribute('fill', 'none');
+            taskIcon.setAttribute('stroke', 'currentColor');
+            taskIcon.setAttribute('stroke-width', '2');
+            taskIcon.setAttribute('stroke-linecap', 'round');
+            taskIcon.setAttribute('stroke-linejoin', 'round');
+            taskIcon.innerHTML = `<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>`;
+            leftContent.appendChild(taskIcon);
+
+            const taskTitle = document.createElement('span');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const completedTextColorClass = isDarkMode ? 'completed-text-dark' : 'completed-text-light';
+            taskTitle.className = `font-bold leading-snug ${isCompleted ? `line-through ${completedTextColorClass}` : 'text-[--text-color]'}`;
+            taskTitle.textContent = item.title;
+            leftContent.appendChild(taskTitle);
+
+            const labelsContainer = document.createElement('div');
+            labelsContainer.className = 'flex items-center flex-wrap gap-2 flex-shrink-0';
+
+            if (item.taskType === 'school') {
+                const subjectLabel = document.createElement('span');
+                subjectLabel.className = 'bg-[--card-bg-color] text-[--secondary-text-color] px-2 py-1 rounded-full text-xs font-medium border border-[--border-color]';
+                subjectLabel.textContent = item.subject;
+                labelsContainer.appendChild(subjectLabel);
+            }
+            if (item.isUrgent) {
+                const urgentLabel = document.createElement('span');
+                urgentLabel.className = 'urgent-label';
+                urgentLabel.textContent = 'Urgent';
+                labelsContainer.appendChild(urgentLabel);
+            }
+
+            if (labelsContainer.children.length > 0) {
+                leftContent.appendChild(labelsContainer);
+            }
+            
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'flex gap-2 items-center';
+            if (taskToMark) {
+                const doneBtn = document.createElement('button');
+                doneBtn.innerHTML = isCompleted
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2 text-[#4EA8DE]"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"/><path d="m9 12 2 2 4-4"/></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle text-[#4EA8DE]"><circle cx="12" cy="12" r="10"/></svg>`;
+                doneBtn.title = isCompleted ? "Mark as incomplete" : "Mark as done";
+                doneBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium py-1 px-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
+                doneBtn.onclick = (event) => {
+                    event.stopPropagation();
+                    toggleCompletion(taskToMark.id);
+                };
+                buttonContainer.appendChild(doneBtn);
+            }
+            
+            const taskDetailsRight = document.createElement('span');
+            taskDetailsRight.className = 'text-xs text-[--secondary-text-color] font-medium whitespace-nowrap text-right';
+            taskDetailsRight.innerHTML = `<span class="text-[--secondary-text-color]">Due:</span> ${item.deadline} • <span class="text-[--secondary-text-color]">Difficulty:</span> ${item.difficulty}`;
+
+            listItem.appendChild(leftContent);
+            listItem.appendChild(taskDetailsRight);
+            listItem.appendChild(buttonContainer);
+            return listItem;
+        }
+        
+        generateBtn.addEventListener('click', generateSummary);
         
         async function generateSummary() {
             loadingDiv.classList.remove('hidden');
             summaryOutputDiv.classList.add('hidden');
-            const sortedAssignments = sortAssignments(assignments);
+            
+            const sortedAssignments = assignments.filter(a => !a.completed);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
             const tasksForLLM = sortedAssignments.length > 0 ? 
-                sortedAssignments.map(a => ({
-                    title: a.title,
-                    deadline: new Date(a.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-                    difficulty: a.difficulty.charAt(0).toUpperCase() + a.difficulty.slice(1)
-                })) : [];
+                sortedAssignments.map(a => {
+                    let deadlineString = 'No Deadline';
+                    let isUrgent = false;
+                    if (a.deadline) {
+                        const deadline = new Date(a.deadline + 'T12:00:00');
+                        deadlineString = deadline.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                        const timeDifference = deadline.getTime() - today.getTime();
+                        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                        
+                        if (daysDifference <= VERY_SOON_DAYS || (a.difficulty === 'high' && daysDifference <= SEMI_SOON_DAYS)) {
+                            isUrgent = true;
+                        }
+                    }
+                    
+                    return {
+                        title: a.title,
+                        deadline: deadlineString,
+                        difficulty: a.difficulty.charAt(0).toUpperCase() + a.difficulty.slice(1),
+                        taskType: a.taskType,
+                        subject: a.subject || null,
+                        isUrgent: isUrgent,
+                        parentTaskId: a.parentTaskId || null,
+                        id: a.id
+                    };
+                }) : [];
+
             const eventsForLLM = googleCalendarEvents.length > 0 ?
                 googleCalendarEvents : [];
             
-            // Check if there are any events or tasks to summarize
             if (tasksForLLM.length === 0 && eventsForLLM.length === 0) {
-                 loadingDiv.classList.add('hidden');
-                 showMessage("Please add tasks or connect your calendar before generating a summary.", "bg-red-500", 5000);
-                 return;
+                loadingDiv.classList.add('hidden');
+                showMessage("Please add tasks or connect your calendar before generating a summary.", "bg-red-500", 5000);
+                return;
             }
 
             const prompt = `
-                Generate a concise, priority-based daily schedule summary for today based on the following data. The tasks and appointments are already sorted and formatted.
-                Today's Appointments:
-                ${JSON.stringify(eventsForLLM)}
-                Today's Tasks:
-                ${JSON.stringify(tasksForLLM)}
+                Generate a concise, priority-based daily schedule summary for today based on the following data.
+                Prioritize urgent tasks and today's appointments.
+                Appointments:
+                ${eventsForLLM.length > 0 ? eventsForLLM.join('\n') : 'No calendar events.'}
+
+                Tasks:
+                ${tasksForLLM.length > 0 ? tasksForLLM.map(task => 
+                    `- Title: ${task.title}, Difficulty: ${task.difficulty}, Due: ${task.deadline}${task.isUrgent ? ', URGENT' : ''}${task.taskType === 'school' ? `, Subject: ${task.subject}` : ''}${task.parentTaskId ? `, Subtask of: ${assignments.find(a => a.id === task.parentTaskId)?.title}` : ''}`
+                ).join('\n') : 'No tasks.'}
             `;
+            
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             const payload = { 
@@ -482,28 +1200,34 @@
                     responseSchema: {
                         type: "OBJECT",
                         properties: {
-                            "appointments": {
-                                type: "ARRAY",
-                                items: { "type": "STRING" }
-                            },
-                            "tasks": {
-                                type: "ARRAY",
-                                items: {
+                            appointments: { type: "ARRAY", items: { type: "STRING" } },
+                            tasks: { 
+                                type: "ARRAY", 
+                                items: { 
                                     type: "OBJECT",
                                     properties: {
-                                        "title": { "type": "STRING" },
-                                        "deadline": { "type": "STRING" },
-                                        "difficulty": { "type": "STRING" }
-                                    }
+                                        title: { type: "STRING" },
+                                        deadline: { type: "STRING" },
+                                        difficulty: { type: "STRING" },
+                                        taskType: { type: "STRING" },
+                                        subject: { type: "STRING" },
+                                        isUrgent: { type: "BOOLEAN" },
+                                        parentTaskId: { type: "STRING" }
+                                    },
+                                    "propertyOrdering": ["title", "deadline", "difficulty", "taskType", "subject", "isUrgent", "parentTaskId"]
                                 }
                             }
-                        }
+                        },
+                        "propertyOrdering": ["appointments", "tasks"]
                     }
                 }
             };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+            
+            const apiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             let attempts = 0;
             const maxAttempts = 5;
+            
             while (attempts < maxAttempts) {
                 try {
                     const response = await fetch(apiUrl, {
@@ -511,10 +1235,13 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    
                     if (!response.ok) {
                         throw new Error(`API error: ${response.status} ${response.statusText}`);
                     }
+                    
                     const result = await response.json();
+
                     if (result.candidates && result.candidates.length > 0 &&
                         result.candidates[0].content && result.candidates[0].content.parts &&
                         result.candidates[0].content.parts.length > 0) {
@@ -528,7 +1255,7 @@
                         console.error('Unexpected API response structure:', result);
                     }
                     break;
-                } catch (error) {
+                } catch(error) {
                     console.error('Error fetching from API:', error);
                     attempts++;
                     if (attempts < maxAttempts) {
