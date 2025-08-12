@@ -39,7 +39,7 @@
             color: var(--text-color);
             transition: background-color 0.3s ease;
         }
-        h1 { font-family: 'Poppins', sans-serif; font-weight: 700; }
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; }
         .difficulty-radio { display: none; }
         .difficulty-radio:checked + .difficulty-label {
             background-color: #4EA8DE;
@@ -51,7 +51,7 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Custom styles for the tab-like buttons */
+        /* Custom styles for the tab-like buttons and summary cards */
         .tab-button.active {
             background-color: #4EA8DE;
             color: white;
@@ -69,10 +69,169 @@
             vertical-align: middle;
             margin-left: 8px;
         }
+        .task-card, .appointment-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        .task-card:hover, .appointment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .task-card .task-order {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #4EA8DE;
+            margin-right: 1rem;
+            width: 2rem;
+            text-align: center;
+        }
+        .subject-label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px; /* full-rounded */
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+            color: white;
+            white-space: nowrap;
+        }
+        .appointment-date-box {
+            background-color: #4EA8DE;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            flex-shrink: 0;
+            width: 5rem;
+            margin-right: 1rem;
+        }
+        .appointment-date-box .month {
+            font-size: 0.75rem;
+            line-height: 1;
+        }
+        .appointment-date-box .day {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
         /* Added style for collapsed subtasks */
         .collapsed-subtasks {
             display: none;
         }
+
+        /* Calendar specific styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            min-height: 100px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .calendar-day:hover {
+            background-color: var(--card-bg-color);
+        }
+        .calendar-day-header {
+            font-size: 0.875rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--secondary-text-color);
+        }
+        .calendar-day-number {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--text-color);
+            position: absolute;
+            top: 4px;
+            right: 8px;
+        }
+        .calendar-day.inactive {
+            color: var(--secondary-text-color);
+            background-color: var(--card-bg-color);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .calendar-day.has-events {
+            border-color: #4EA8DE;
+            background-color: #e0f2fe; /* sky-100 */
+        }
+        .dark-mode .calendar-day.has-events {
+            background-color: #2d4154; /* Dark blue, for the date input */
+        }
+        .calendar-events-container {
+            margin-top: 24px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .calendar-event {
+            font-size: 0.75rem;
+            line-height: 1;
+            padding: 4px 6px;
+            border-radius: 4px;
+            background-color: #4EA8DE;
+            color: white;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+
+        /* New styles for delete confirmation */
+        .calendar-event.confirm-delete {
+            background-color: #ef4444; /* red-500 */
+            transition: background-color 0.2s ease;
+        }
+        .event-details-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 100%; /* Position above the event */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px;
+            background-color: #333;
+            color: white;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 20;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .calendar-event:hover .event-details-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .selected-date-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #4EA8DE;
+            border-radius: 8px;
+            box-shadow: 0 0 0 2px #4EA8DE;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen text-[--text-color]">
@@ -100,12 +259,10 @@
         <!-- Tasks Section -->
         <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color]">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-semibold text-[--text-color]">Tasks</h2>
-                <!-- Task Type Toggle Buttons -->
+                <h2 id="main-heading" class="text-2xl font-semibold text-[--text-color]">General Tasks</h2>
                 <div class="flex rounded-full bg-[--main-bg-color] shadow-md">
                     <button id="toggle-general" class="tab-button active px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200">General Tasks</button>
                     <button id="toggle-school" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">School Assignments</button>
-                    <!-- New Calendar Toggle Button -->
                     <button id="toggle-calendar" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">Calendar</button>
                 </div>
             </div>
@@ -189,13 +346,59 @@
                 </form>
             </div>
 
-            <!-- New: Calendar Events Display Container -->
-            <div id="calendar-events-container" class="hidden p-6 text-center text-[--secondary-text-color]">
-                <h3 class="text-2xl font-semibold mb-4 text-[--text-color]">Today's Calendar Events</h3>
-                <p id="calendar-placeholder" class="text-lg italic">Connect your Google Calendar to see your events here.</p>
-                <ul id="calendar-events-list" class="space-y-3 mt-4 text-left mx-auto max-w-xl"></ul>
+            <!-- Calendar View Container -->
+            <div id="calendar-view-container" class="hidden">
+                <!-- Add Calendar Event Form -->
+                <form id="add-calendar-event-form" class="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
+                    <input type="text" id="event-title-input" placeholder="Event Title" required class="md:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                    <div class="flex flex-col space-y-2">
+                        <label for="event-date-input" class="text-sm font-semibold text-[--text-color]">Event Date:</label>
+                        <input type="date" id="event-date-input" required class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                    </div>
+                    <div class="flex flex-col space-y-2">
+                        <label for="event-time-input" class="text-sm font-semibold text-[--text-color]">Time (Optional):</label>
+                        <input type="time" id="event-time-input" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                    </div>
+                    <div class="flex flex-col space-y-2">
+                        <label for="event-location-input" class="text-sm font-semibold text-[--text-color]">Location (Optional):</label>
+                        <input type="text" id="event-location-input" placeholder="e.g. Room 101" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                    </div>
+                    <div class="flex items-center space-x-2 lg:col-span-2 mt-2">
+                        <input type="checkbox" id="recurring-checkbox" class="h-4 w-4 text-[#4EA8DE] border-gray-300 rounded focus:ring-[#4EA8DE]">
+                        <label for="recurring-checkbox" class="ml-2 text-sm text-[--text-color]">Recurring Event (Weekly)</label>
+                    </div>
+                    <button type="submit" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto md:col-span-2 lg:col-span-1">Add Event</button>
+                </form>
+
+                <!-- Calendar Display -->
+                <div class="calendar-container p-6 bg-[--main-bg-color] rounded-2xl border border-[--border-color] shadow-inner">
+                    <!-- Calendar Header with month and navigation -->
+                    <div class="flex items-center justify-between mb-4">
+                        <button id="prev-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left text-[#4EA8DE]"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <h3 id="current-month-year" class="text-xl font-bold text-[--text-color] text-center">Month Year</h3>
+                        <button id="next-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-[#4EA8DE]"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                    <!-- Day of the week headers -->
+                    <div class="calendar-grid mb-2">
+                        <div class="calendar-day-header">Sun</div>
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                    </div>
+                    <!-- Calendar days grid -->
+                    <div id="calendar-grid-body" class="calendar-grid">
+                        <!-- Calendar days will be dynamically generated here -->
+                    </div>
+                </div>
             </div>
-            
+
             <div id="assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
                 <p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>
             </div>
@@ -204,7 +407,7 @@
         <!-- Action Buttons Section -->
         <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color] flex flex-col md:flex-row gap-4 justify-between items-center">
             <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
-                Connect Google Calendar
+                Connect Google Calendar (Coming Soon)
             </button>
             <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
                 Generate Summary
@@ -215,47 +418,59 @@
         <div id="loading" class="hidden flex justify-center items-center h-48">
             <div class="w-9 h-9 rounded-full border-4 border-[--border-color] border-l-[#4EA8DE] animate-spin"></div>
         </div>
-        <div id="summary-output" class="hidden min-h-[200px] bg-[--card-bg-color] border-l-4 border-l-[#4EA8DE] p-6 rounded-xl shadow-md transition-opacity">
+        <div id="summary-output" class="hidden p-6 rounded-xl shadow-md transition-opacity">
         </div>
     </div>
     <div id="message-box" class="fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-full opacity-0 z-50 text-white"></div>
+    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-[--main-bg-color] p-6 rounded-xl shadow-lg border border-[--border-color] max-w-sm w-full">
+            <p id="modal-text" class="text-[--text-color] text-center mb-4">Are you sure you want to delete this event?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="modal-confirm-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full transition-colors">Yes, Delete</button>
+                <button id="modal-cancel-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition-colors">Cancel</button>
+            </div>
+        </div>
+    </div>
     <!-- Google API library for Calendar integration -->
     <script src="https://apis.google.com/js/api.js"></script>
     <script type="module">
         // Import Firebase SDK modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
-        // --- Your Application Configuration ---
-        // IMPORTANT: Replace these with your actual keys from your Google Cloud and Firebase projects.
-        const firebaseConfig = {
-            apiKey: "AIzaSyDzMgpUM9wgrSBWgk50AvmnBFE_f7IvJ_Q",
-            authDomain: "simplifly-efd5f.firebaseapp.com",
-            projectId: "simplifly-efd5f",
-            storageBucket: "simplifly-efd5f.firebasestorage.app",
-            messagingSenderId: "478943856947",
-            appId: "1:478943856947:web:07b95a8c0be06dd73c5646",
-            measurementId: "G-6MR8C52BQX"
-        };
-        const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
-        const initialAuthToken = null; // No initial auth token needed for public deployment.
+        // --- IMPORTANT: Use global variables for configuration in this environment ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
+        // Google Calendar API Constants
+        const GOOGLE_API_CLIENT_ID = '478943856947-e1t3709d3aj6ce1r6dele2dho0qhhi54.apps.googleusercontent.com';
         const GOOGLE_API_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
         const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
         
+        // State Variables
         let app, db, auth;
         let userId;
         let assignments = [];
+        let events = []; // New array to hold calendar events
         let isAuthReady = false;
         let googleCalendarEvents = [];
         let taskMode = 'general'; // new state variable for task type
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedDate = null;
+        let subjectColors = {}; // New map to store subject colors
+
+        // State for expanded/collapsed parent tasks
+        const expandedParentTasks = new Set();
         
-        // Constants for urgent logic
+        // Constants for urgent logic and styling
         const VERY_SOON_DAYS = 3;
         const SEMI_SOON_DAYS = 7;
-
-        // DOM elements
+        const COLOR_PALETTE = ['#FCA5A5', '#FDBA74', '#FCD34D', '#A7F3D0', '#A5F3FC', '#A5B4FC', '#C4B5FD', '#FBCFE8', '#FDE68A'];
+        
+        // --- DOM Elements ---
         const userIdSpan = document.getElementById('user-id');
         const generalTaskForm = document.getElementById('add-general-task-form');
         const schoolAssignmentForm = document.getElementById('add-school-assignment-form');
@@ -274,9 +489,18 @@
         const toggleSchoolBtn = document.getElementById('toggle-school');
         const toggleCalendarBtn = document.getElementById('toggle-calendar');
         const schoolTaskContainer = document.getElementById('add-school-task-container');
-        const calendarEventsContainer = document.getElementById('calendar-events-container');
-        const calendarEventsList = document.getElementById('calendar-events-list');
-        const calendarPlaceholder = document.getElementById('calendar-placeholder');
+        const calendarViewContainer = document.getElementById('calendar-view-container');
+        const addCalendarEventForm = document.getElementById('add-calendar-event-form');
+        const eventTitleInput = document.getElementById('event-title-input');
+        const eventDateInput = document.getElementById('event-date-input');
+        const eventTimeInput = document.getElementById('event-time-input');
+        const eventLocationInput = document.getElementById('event-location-input');
+        const recurringCheckbox = document.getElementById('recurring-checkbox');
+        const prevMonthBtn = document.getElementById('prev-month-btn');
+        const nextMonthBtn = document.getElementById('next-month-btn');
+        const currentMonthYearHeader = document.getElementById('current-month-year');
+        const calendarGridBody = document.getElementById('calendar-grid-body');
+        const mainHeading = document.getElementById('main-heading');
         const subjectSelect = document.getElementById('subject-select');
         const newSubjectInput = document.getElementById('new-subject-input');
         const addSubjectBtn = document.getElementById('add-subject-btn');
@@ -286,66 +510,57 @@
         const sunIcon = document.getElementById('sun-icon');
         const generalParentTaskSelect = document.getElementById('general-parent-task');
         const schoolParentTaskSelect = document.getElementById('school-parent-task');
-        
-        // State for expanded/collapsed parent tasks - new feature
-        const expandedParentTasks = new Set();
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const modalText = document.getElementById('modal-text');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
 
 
-        // Initialize Firebase and set up authentication
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            const appId = firebaseConfig.projectId; // Use project ID for a public app
-            
-            // Listen for authentication state changes.
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userIdSpan.textContent = userId;
-                    isAuthReady = true;
-                    listenForAssignments();
-                    fetchSubjects();
-                    generateBtn.disabled = false;
-                } else {
-                    console.log("No user signed in. Attempting anonymous authentication.");
-                    try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) {
-                        console.error("Authentication failed:", error);
-                        userIdSpan.textContent = 'Auth Failed';
+        // --- Initialization and Event Handlers ---
+
+        /**
+         * Initializes Firebase authentication and listeners.
+         */
+        async function initializeAppAndAuth() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Listen for authentication state changes to set up app state
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdSpan.textContent = userId;
                         isAuthReady = true;
+                        // Fetch initial data once auth is ready
+                        listenForAssignments();
+                        listenForEvents();
+                        fetchSubjects();
+                        generateBtn.disabled = false;
+                    } else {
+                        console.log("No user signed in. Attempting anonymous authentication.");
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Authentication failed:", error);
+                            userIdSpan.textContent = 'Auth Failed';
+                            isAuthReady = true;
+                        }
                     }
-                }
-            });
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
-            userIdSpan.textContent = 'Init Failed';
-            showMessage("Firebase initialization failed. Check the console.", "bg-red-500", 5000);
-        }
-
-        // Dark mode toggle logic
-        themeToggleBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            updateThemeIcons(isDarkMode);
-        });
-
-        // Function to update the visibility of theme icons
-        function updateThemeIcons(isDarkMode) {
-            if (isDarkMode) {
-                moonIcon.classList.remove('hidden');
-                sunIcon.classList.add('hidden');
-            } else {
-                moonIcon.classList.add('hidden');
-                sunIcon.classList.remove('hidden');
+                });
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                userIdSpan.textContent = 'Init Failed';
+                showMessage("Firebase initialization failed. Check the console.", "bg-red-500", 5000);
             }
         }
+        
+        window.onload = initializeAppAndAuth;
 
         // Apply theme on page load based on localStorage
         const storedTheme = localStorage.getItem('theme');
@@ -356,39 +571,64 @@
             updateThemeIcons(false);
         }
 
+        // --- UI & State Management ---
 
-        // Refactored UI toggling logic into a single function for cleanliness
+        /**
+         * Toggles the theme between light and dark mode.
+         */
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeIcons(isDarkMode);
+        });
+
+        /**
+         * Updates the visibility of the sun and moon icons based on the theme.
+         * @param {boolean} isDarkMode - True if dark mode is active.
+         */
+        function updateThemeIcons(isDarkMode) {
+            if (isDarkMode) {
+                moonIcon.classList.remove('hidden');
+                sunIcon.classList.add('hidden');
+            } else {
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Switches the main view between general tasks, school assignments, and calendar.
+         * @param {string} mode - The mode to switch to ('general', 'school', or 'calendar').
+         */
         function setTaskMode(mode) {
-            // Deactivate all buttons and hide all containers
             [toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn].forEach(btn => {
                 btn.classList.remove('active');
                 btn.classList.add('text-[--secondary-text-color]');
             });
-            [generalTaskForm, schoolTaskContainer, assignmentsListDiv, calendarEventsContainer].forEach(container => {
+            [generalTaskForm, schoolTaskContainer, calendarViewContainer, assignmentsListDiv].forEach(container => {
                 container.classList.add('hidden');
             });
-
-            // Activate the correct button and show the correct container
+            
+            taskMode = mode;
             if (mode === 'general') {
-                taskMode = 'general';
+                mainHeading.textContent = 'General Tasks';
                 toggleGeneralBtn.classList.add('active');
                 toggleGeneralBtn.classList.remove('text-[--secondary-text-color]');
                 generalTaskForm.classList.remove('hidden');
                 assignmentsListDiv.classList.remove('hidden');
-                renderAssignments(assignments);
             } else if (mode === 'school') {
-                taskMode = 'school';
+                mainHeading.textContent = 'School Assignments';
                 toggleSchoolBtn.classList.add('active');
                 toggleSchoolBtn.classList.remove('text-[--secondary-text-color]');
                 schoolTaskContainer.classList.remove('hidden');
                 assignmentsListDiv.classList.remove('hidden');
-                renderAssignments(assignments);
             } else if (mode === 'calendar') {
-                taskMode = 'calendar';
+                mainHeading.textContent = 'Calendar';
                 toggleCalendarBtn.classList.add('active');
                 toggleCalendarBtn.classList.remove('text-[--secondary-text-color]');
-                calendarEventsContainer.classList.remove('hidden');
-                renderCalendarEvents(googleCalendarEvents);
+                calendarViewContainer.classList.remove('hidden');
+                renderCalendar();
             }
         }
 
@@ -400,14 +640,18 @@
         // Toggle deadline input based on checkbox
         noDeadlineCheckbox.addEventListener('change', (e) => {
             generalAssignmentDeadlineInput.disabled = e.target.checked;
-            if (e.target.checked) {
-                generalAssignmentDeadlineInput.value = '';
-                generalAssignmentDeadlineInput.placeholder = 'No deadline';
-            } else {
-                generalAssignmentDeadlineInput.placeholder = '';
-            }
+            generalAssignmentDeadlineInput.value = '';
+            generalAssignmentDeadlineInput.placeholder = e.target.checked ? 'No deadline' : '';
         });
 
+        // --- Helper Functions ---
+
+        /**
+         * Displays a temporary message box.
+         * @param {string} text - The message to display.
+         * @param {string} bgColor - The Tailwind CSS background color class.
+         * @param {number} duration - The duration in milliseconds to display the message.
+         */
         function showMessage(text, bgColor, duration) {
             messageBox.textContent = text;
             messageBox.className = `fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 z-50 ${bgColor} text-white`;
@@ -416,194 +660,18 @@
             }, duration);
         }
 
-        async function connectGoogleCalendar() {
-            try {
-                await gapi.client.init({
-                    apiKey: firebaseConfig.apiKey,
-                    clientId: GOOGLE_API_CLIENT_ID,
-                    discoveryDocs: GOOGLE_API_DISCOVERY_DOCS,
-                    scope: GOOGLE_API_SCOPES,
-                });
-                if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                    showMessage("Already connected to Google Calendar.", "bg-[#4EA8DE]", 3000);
-                    fetchCalendarEvents();
-                } else {
-                    await gapi.auth2.getAuthInstance().signIn();
-                    showMessage("Successfully connected to Google Calendar!", "bg-[#9EE6C8]", 3000);
-                    fetchCalendarEvents();
-                }
-            } catch (error) {
-                console.error("Error connecting to Google Calendar:", error);
-                showMessage("Failed to connect to Google Calendar. Ensure your client ID is configured correctly.", "bg-red-500", 5000);
-            }
-        }
-        
-        async function fetchCalendarEvents() {
-            if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                console.warn("Not signed in to Google Calendar. Skipping event fetch.");
-                googleCalendarEvents = [];
-                renderCalendarEvents(googleCalendarEvents);
-                return;
-            }
-            const now = new Date();
-            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-            const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
-            try {
-                const response = await gapi.client.calendar.events.list({
-                    'calendarId': 'primary',
-                    'timeMin': todayStart,
-                    'timeMax': tomorrowStart,
-                    'showDeleted': false,
-                    'singleEvents': true,
-                    'maxResults': 10,
-                    'orderBy': 'startTime'
-                });
-                googleCalendarEvents = response.result.items.map(event => {
-                    const start = event.start.dateTime || event.start.date;
-                    return `${new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${event.summary}`;
-                });
-                renderCalendarEvents(googleCalendarEvents);
-            } catch (error) {
-                console.error("Error fetching Google Calendar events:", error);
-                googleCalendarEvents = [];
-                showMessage("Error fetching calendar events.", "bg-red-500", 5000);
-                renderCalendarEvents(googleCalendarEvents);
-            }
-        }
-        
-        connectCalendarBtn.addEventListener('click', () => {
-            // Check for gapi before trying to load it
-            if (typeof gapi !== 'undefined') {
-                gapi.load('client:auth2', connectGoogleCalendar);
-            } else {
-                showMessage("Google API client library failed to load.", "bg-red-500", 5000);
-            }
-        });
-
-        // Function to render the fetched calendar events
-        function renderCalendarEvents(events) {
-            calendarEventsList.innerHTML = '';
-            if (events.length === 0) {
-                calendarPlaceholder.textContent = 'No calendar events for today.';
-                calendarPlaceholder.classList.remove('hidden');
-            } else {
-                calendarPlaceholder.classList.add('hidden');
-                events.forEach(event => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'flex items-center gap-2 p-3 rounded-xl border border-[--border-color] bg-[--main-bg-color] text-[--text-color] shadow-sm';
-                    listItem.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-[#4EA8DE] flex-shrink-0"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-                        <span>${event}</span>
-                    `;
-                    calendarEventsList.appendChild(listItem);
-                });
-            }
-        }
-
-        // Function to fetch and render subjects for the dropdown
-        async function fetchSubjects() {
-            if (!isAuthReady || !db) { return; }
-            const subjectsCollection = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
-            try {
-                const querySnapshot = await getDocs(subjectsCollection);
-                subjectSelect.innerHTML = ''; // Clear previous options
-                let hasSubjects = false;
-                querySnapshot.forEach((doc) => {
-                    const subject = doc.data().name;
-                    const option = document.createElement('option');
-                    option.value = subject;
-                    option.textContent = subject;
-                    subjectSelect.appendChild(option);
-                    hasSubjects = true;
-                });
-                if (!hasSubjects) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = 'No subjects added yet';
-                    option.disabled = true;
-                    option.selected = true;
-                    subjectSelect.appendChild(option);
-                }
-            } catch (e) {
-                console.error("Error fetching subjects: ", e);
-                showMessage("Error fetching subjects.", "bg-red-500", 5000);
-            }
-        }
-
-        // Add a new subject
-        addSubjectBtn.addEventListener('click', async () => {
-            const newSubject = newSubjectInput.value.trim();
-            if (newSubject) {
-                if (!db) {
-                    showMessage("Database functions are disabled.", "bg-gray-500", 5000);
-                    return;
-                }
-                try {
-                    const subjectsCollection = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
-                    await addDoc(subjectsCollection, { name: newSubject });
-                    newSubjectInput.value = '';
-                    fetchSubjects(); // Refresh the dropdown
-                    showMessage("Subject added successfully!", "bg-[#9EE6C8]", 3000);
-                } catch (e) {
-                    console.error("Error adding subject: ", e);
-                    showMessage("Error adding subject. Check the console.", "bg-red-500", 5000);
-                }
-            } else {
-                showMessage("Please enter a subject name.", "bg-red-500", 5000);
-            }
-        });
-
-        // Remove a subject
-        removeSubjectBtn.addEventListener('click', async () => {
-            const subjectToRemove = subjectSelect.value;
-            if (subjectToRemove === 'No subjects added yet' || !subjectToRemove) {
-                showMessage("Please select a valid subject to remove.", "bg-red-500", 3000);
-                return;
-            }
-            if (!db) {
-                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
-                return;
-            }
-
-            try {
-                const assignmentsRef = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
-                const q = query(assignmentsRef, where('subject', '==', subjectToRemove));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    showMessage("Cannot remove subject: it still has assignments. Please remove or update the assignments first.", "bg-red-500", 5000);
-                    return;
-                }
-
-                const subjectsRef = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
-                const subjectQuery = query(subjectsRef, where('name', '==', subjectToRemove));
-                const subjectSnapshot = await getDocs(subjectQuery);
-                
-                if (!subjectSnapshot.empty) {
-                    const docId = subjectSnapshot.docs[0].id;
-                    const subjectDocRef = doc(subjectsRef, docId);
-                    await deleteDoc(subjectDocRef);
-                    fetchSubjects(); // Refresh the dropdown
-                    showMessage(`Subject '${subjectToRemove}' removed successfully!`, "bg-[#333333]", 3000);
-                }
-
-            } catch (e) {
-                console.error("Error removing subject: ", e);
-                showMessage("Error removing subject. Check the console.", "bg-red-500", 5000);
-            }
-        });
-        
+        /**
+         * Sorts assignments by deadline and then by difficulty.
+         * @param {Array<Object>} assignments - An array of assignment objects.
+         * @returns {Array<Object>} The sorted array.
+         */
         function sortAssignments(assignments) {
             const difficultyMap = { 'high': 3, 'medium': 2, 'low': 1 };
             return assignments.sort((a, b) => {
-                // If a has no deadline and b does, a comes last
                 if (!a.deadline && b.deadline) return 1;
-                // If b has no deadline and a does, b comes last
                 if (a.deadline && !b.deadline) return -1;
-                // If both have no deadline, their order doesn't matter (maintain original order)
                 if (!a.deadline && !b.deadline) return 0;
                 
-                // Sort by deadline, then by difficulty (High to Low)
                 const deadlineA = new Date(a.deadline + 'T12:00:00');
                 const deadlineB = new Date(b.deadline + 'T12:00:00');
                 if (deadlineA.getTime() !== deadlineB.getTime()) {
@@ -612,8 +680,11 @@
                 return difficultyMap[b.difficulty] - difficultyMap[a.difficulty];
             });
         }
-
-        // Function to populate the parent task dropdowns
+        
+        /**
+         * Populates the parent task dropdowns with a list of non-completed tasks.
+         * @param {Array<Object>} tasks - A list of task objects.
+         */
         function populateParentTaskSelect(tasks) {
             const generalTasks = tasks.filter(t => t.taskType === 'general' && !t.parentTaskId);
             const schoolAssignments = tasks.filter(t => t.taskType === 'school' && !t.parentTaskId);
@@ -631,54 +702,109 @@
             createOptions(generalParentTaskSelect, generalTasks);
             createOptions(schoolParentTaskSelect, schoolAssignments);
         }
+
+        /**
+         * Gets a consistent color for a subject based on its name.
+         * @param {string} subject - The subject name.
+         * @returns {string} A hex color code.
+         */
+        function getSubjectColor(subject) {
+            const lowerSubject = subject.toLowerCase();
+            if (['history', 'business', 'economics'].some(s => lowerSubject.includes(s))) {
+                return '#A7F3D0'; // Green
+            } else if (['english', 'literature', 'writing'].some(s => lowerSubject.includes(s))) {
+                return '#FCD34D'; // Yellow
+            } else if (['science', 'biology', 'chemistry', 'physics'].some(s => lowerSubject.includes(s))) {
+                return '#C4B5FD'; // Purple
+            } else if (['math', 'mathematics', 'calculus', 'algebra'].some(s => lowerSubject.includes(s))) {
+                return '#A5B4FC'; // Blue
+            }
+            return COLOR_PALETTE[Object.keys(subjectColors).length % COLOR_PALETTE.length];
+        }
+
+        // --- Firebase Integration ---
         
-        // Refactored listenForAssignments to handle subtasks
+        /**
+         * Listens for real-time updates to the assignments collection.
+         */
         function listenForAssignments() {
-            if (!isAuthReady || !db) { return; }
+            if (!isAuthReady || !db) return;
             const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
-            const q = query(privateAssignmentsCollection);
-            
-            onSnapshot(q, (querySnapshot) => {
+            onSnapshot(privateAssignmentsCollection, (querySnapshot) => {
+                const now = new Date();
                 const overdueTasks = [];
                 assignments = [];
-                if (querySnapshot.empty) {
-                    renderAssignments(assignments);
-                    populateParentTaskSelect([]);
-                } else {
-                    const now = new Date();
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        
-                        if (data.deadline && new Date(data.deadline + 'T12:00:00') < now && !data.completed) {
-                            overdueTasks.push(doc.id);
-                        }
-                        assignments.push({ ...data, id: doc.id });
-                    });
-                    overdueTasks.forEach(id => {
-                        removeAssignment(id, false);
-                    });
-                    
-                    populateParentTaskSelect(assignments.filter(t => !t.completed));
-                    renderAssignments(assignments);
-                }
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.deadline && new Date(data.deadline + 'T12:00:00') < now && !data.completed) {
+                        overdueTasks.push(doc.id);
+                    }
+                    assignments.push({ ...data, id: doc.id });
+                });
+                overdueTasks.forEach(id => removeAssignment(id, false));
+                populateParentTaskSelect(assignments.filter(t => !t.completed));
+                renderAssignments(assignments);
             }, (error) => {
-                console.error("Error setting up Firestore listener:", error);
+                console.error("Error setting up Firestore listener for assignments:", error);
+            });
+        }
+
+        /**
+         * Listens for real-time updates to the events collection.
+         */
+        function listenForEvents() {
+            if (!isAuthReady || !db) return;
+            const eventsCollection = collection(db, `artifacts/${appId}/users/${userId}/events`);
+            onSnapshot(eventsCollection, (querySnapshot) => {
+                events = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                renderCalendar();
+            }, (error) => {
+                console.error("Error setting up Firestore listener for events:", error);
             });
         }
         
-        async function toggleCompletion(docId) {
-            if (!db) {
-                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
-                return;
+        /**
+         * Fetches all subjects and populates the subject dropdown.
+         */
+        async function fetchSubjects() {
+            if (!isAuthReady || !db) return;
+            const subjectsCollection = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
+            try {
+                const querySnapshot = await getDocs(subjectsCollection);
+                subjectSelect.innerHTML = '';
+                subjectColors = {};
+                let hasSubjects = false;
+                querySnapshot.forEach((doc) => {
+                    const subjectData = doc.data();
+                    const subject = subjectData.name;
+                    const color = subjectData.color || getSubjectColor(subject);
+                    subjectColors[subject] = color;
+                    
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                    hasSubjects = true;
+                });
+                if (!hasSubjects) {
+                    subjectSelect.innerHTML = '<option value="" disabled selected>No subjects added yet</option>';
+                }
+            } catch (e) {
+                console.error("Error fetching subjects: ", e);
+                showMessage("Error fetching subjects.", "bg-red-500", 5000);
             }
+        }
+        
+        /**
+         * Toggles the completion status of a task.
+         * @param {string} docId - The ID of the task document.
+         */
+        async function toggleCompletion(docId) {
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
             try {
                 const task = assignments.find(t => t.id === docId);
-                if (!task) {
-                    showMessage("Task not found.", "bg-red-500", 5000);
-                    return;
-                }
+                if (!task) { showMessage("Task not found.", "bg-red-500", 5000); return; }
                 
-                // If marking as complete, check for incomplete subtasks
                 if (!task.completed) {
                     const subtasks = assignments.filter(t => t.parentTaskId === docId && !t.completed);
                     if (subtasks.length > 0) {
@@ -691,31 +817,45 @@
                 await updateDoc(assignmentRef, { completed: !task.completed });
                 showMessage(`Task marked as ${!task.completed ? 'done' : 'incomplete'}!`, "bg-[#9EE6C8]", 3000);
             } catch (e) {
-                console.error("Error updating document: ", e);
-                showMessage("Error marking task as done. Check the console.", "bg-red-500", 5000);
+                console.error("Error updating document:", e);
+                showMessage("Error marking task as done.", "bg-red-500", 5000);
             }
         }
         
+        /**
+         * Removes a task from the database.
+         * @param {string} docId - The ID of the task document.
+         * @param {boolean} [showMsg=true] - Whether to show a success message.
+         */
         async function removeAssignment(docId, showMsg = true) {
-            if (!db) {
-                if (showMsg) {
-                    showMessage("Database functions are disabled.", "bg-gray-500", 5000);
-                }
-                return;
-            }
+            if (!db) { if (showMsg) showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
             try {
                 const assignmentRef = doc(db, `artifacts/${appId}/users/${userId}/assignments`, docId);
                 await deleteDoc(assignmentRef);
-                if (showMsg) {
-                    showMessage("Task removed!", "bg-[#333333]", 3000);
-                }
+                if (showMsg) showMessage("Task removed!", "bg-[#333333]", 3000);
             } catch (e) {
-                console.error("Error removing document: ", e);
-                if (showMsg) {
-                    showMessage("Error removing task. Check the console.", "bg-red-500", 5000);
-                }
+                console.error("Error removing document:", e);
+                if (showMsg) showMessage("Error removing task.", "bg-red-500", 5000);
             }
         }
+
+        /**
+         * Removes an event from the database.
+         * @param {string} docId - The ID of the event document.
+         */
+        async function removeEvent(docId) {
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
+            try {
+                const eventRef = doc(db, `artifacts/${appId}/users/${userId}/events`, docId);
+                await deleteDoc(eventRef);
+                showMessage("Event removed!", "bg-[#333333]", 3000);
+            } catch (e) {
+                console.error("Error removing event:", e);
+                showMessage("Error removing event.", "bg-red-500", 5000);
+            }
+        }
+        
+        // --- Form Submission Handlers ---
         
         generalTaskForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -724,14 +864,8 @@
             const difficulty = document.querySelector('input[name="difficulty-radio"]:checked').value;
             const parentTaskId = generalParentTaskSelect.value || null;
             
-            if (!title) {
-                showMessage("Please enter a task title.", "bg-red-500", 5000);
-                return;
-            }
-            if (!deadline && !noDeadlineCheckbox.checked) {
-                showMessage("Please enter a deadline or select 'No Deadline'.", "bg-red-500", 5000);
-                return;
-            }
+            if (!title) { showMessage("Please enter a task title.", "bg-red-500", 5000); return; }
+            if (!deadline && !noDeadlineCheckbox.checked) { showMessage("Please enter a deadline or select 'No Deadline'.", "bg-red-500", 5000); return; }
             
             if (parentTaskId && deadline) {
                 const parentTask = assignments.find(t => t.id === parentTaskId);
@@ -741,10 +875,7 @@
                 }
             }
 
-            if (!db) {
-                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
-                return;
-            }
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
             try {
                 const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
                 await addDoc(privateAssignmentsCollection, {
@@ -756,13 +887,11 @@
                     completed: false,
                     createdAt: serverTimestamp()
                 });
-                generalAssignmentTitleInput.value = '';
-                generalAssignmentDeadlineInput.value = '';
-                noDeadlineCheckbox.checked = false;
+                generalTaskForm.reset();
                 generalAssignmentDeadlineInput.disabled = false;
                 showMessage("General task added successfully!", "bg-[#9EE6C8]", 3000);
             } catch (e) {
-                console.error("Error adding document: ", e);
+                console.error("Error adding document:", e);
                 showMessage("Error adding task. Check the console for details.", "bg-red-500", 5000);
             }
         });
@@ -788,10 +917,7 @@
                 }
             }
             
-            if (!db) {
-                showMessage("Database functions are disabled.", "bg-gray-500", 5000);
-                return;
-            }
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
             try {
                 const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
                 await addDoc(privateAssignmentsCollection, {
@@ -804,15 +930,105 @@
                     completed: false,
                     createdAt: serverTimestamp()
                 });
-                schoolAssignmentTitleInput.value = '';
-                schoolAssignmentDeadlineInput.value = '';
+                schoolAssignmentForm.reset();
                 showMessage("School assignment added successfully!", "bg-[#9EE6C8]", 3000);
             } catch (e) {
-                console.error("Error adding document: ", e);
+                console.error("Error adding document:", e);
                 showMessage("Error adding assignment. Check the console for details.", "bg-red-500", 5000);
             }
         });
         
+        addCalendarEventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = eventTitleInput.value;
+            const date = eventDateInput.value;
+            const time = eventTimeInput.value || null;
+            const location = eventLocationInput.value || null;
+            const isRecurring = recurringCheckbox.checked;
+            
+            if (!title || !date) { showMessage("Please enter both an event title and date.", "bg-red-500", 5000); return; }
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
+            
+            try {
+                const eventsCollection = collection(db, `artifacts/${appId}/users/${userId}/events`);
+                if (isRecurring) {
+                    const initialDate = new Date(date);
+                    const weekInMillis = 7 * 24 * 60 * 60 * 1000;
+                    for (let i = 0; i < 52; i++) {
+                        const newDate = new Date(initialDate.getTime() + (i * weekInMillis));
+                        const newDateString = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+                        await addDoc(eventsCollection, {
+                            title, date: newDateString, time, location, isRecurring: true, createdAt: serverTimestamp()
+                        });
+                    }
+                    showMessage("Recurring events added successfully!", "bg-[#9EE6C8]", 3000);
+                } else {
+                    await addDoc(eventsCollection, {
+                        title, date, time, location, isRecurring: false, createdAt: serverTimestamp()
+                    });
+                    showMessage("Event added successfully!", "bg-[#9EE6C8]", 3000);
+                }
+                
+                addCalendarEventForm.reset();
+            } catch (e) {
+                console.error("Error adding event:", e);
+                showMessage("Error adding event. Check the console for details.", "bg-red-500", 5000);
+            }
+        });
+
+        // --- Subject Management ---
+        
+        addSubjectBtn.addEventListener('click', async () => {
+            const newSubject = newSubjectInput.value.trim();
+            if (!newSubject) { showMessage("Please enter a subject name.", "bg-red-500", 5000); return; }
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
+            try {
+                const subjectsCollection = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
+                const color = getSubjectColor(newSubject);
+                await addDoc(subjectsCollection, { name: newSubject, color: color });
+                newSubjectInput.value = '';
+                fetchSubjects();
+                showMessage("Subject added successfully!", "bg-[#9EE6C8]", 3000);
+            } catch (e) {
+                console.error("Error adding subject: ", e);
+                showMessage("Error adding subject.", "bg-red-500", 5000);
+            }
+        });
+
+        removeSubjectBtn.addEventListener('click', async () => {
+            const subjectToRemove = subjectSelect.value;
+            if (!subjectToRemove || subjectToRemove === 'No subjects added yet') { showMessage("Please select a valid subject to remove.", "bg-red-500", 3000); return; }
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
+
+            try {
+                const assignmentsRef = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
+                const q = query(assignmentsRef, where('subject', '==', subjectToRemove));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    showMessage("Cannot remove subject: it still has assignments. Please remove or update the assignments first.", "bg-red-500", 5000);
+                    return;
+                }
+
+                const subjectsRef = collection(db, `artifacts/${appId}/users/${userId}/subjects`);
+                const subjectQuery = query(subjectsRef, where('name', '==', subjectToRemove));
+                const subjectSnapshot = await getDocs(subjectQuery);
+                
+                if (!subjectSnapshot.empty) {
+                    const docId = subjectSnapshot.docs[0].id;
+                    const subjectDocRef = doc(subjectsRef, docId);
+                    await deleteDoc(subjectDocRef);
+                    fetchSubjects();
+                    showMessage(`Subject '${subjectToRemove}' removed successfully!`, "bg-[#333333]", 3000);
+                }
+            } catch (e) {
+                console.error("Error removing subject:", e);
+                showMessage("Error removing subject.", "bg-red-500", 5000);
+            }
+        });
+
+        // --- Assignment Rendering ---
+
         function renderAssignments(assignmentsToRender) {
             assignmentsListDiv.innerHTML = '';
             if (assignmentsToRender.length === 0) {
@@ -820,15 +1036,12 @@
                 return;
             }
             
-            // Separate completed and incomplete tasks
             const activeAssignments = assignmentsToRender.filter(t => !t.completed);
             const completedAssignments = assignmentsToRender.filter(t => t.completed);
 
-            // Sort and group active tasks
             const sortedActiveAssignments = sortAssignments(activeAssignments);
             const activeTopLevelTasks = sortedActiveAssignments.filter(task => !task.parentTaskId);
             
-            // Group active tasks by type/subject
             const groupedActiveAssignments = {};
             activeTopLevelTasks.forEach(task => {
                 const key = task.taskType === 'school' ? task.subject : 'General Tasks';
@@ -838,7 +1051,6 @@
                 groupedActiveAssignments[key].push(task);
             });
 
-            // Render Active Tasks
             for (const key in groupedActiveAssignments) {
                 const groupTitle = document.createElement('h3');
                 groupTitle.className = 'text-lg font-semibold text-[--text-color] mt-4 mb-2';
@@ -848,7 +1060,6 @@
                 groupedActiveAssignments[key].forEach((taskData) => {
                     const taskElement = createAssignmentElement(taskData, assignmentsToRender);
                     assignmentsListDiv.appendChild(taskElement);
-                    // Render subtasks if the parent is expanded
                     if (expandedParentTasks.has(taskData.id)) {
                         const subtasks = sortedActiveAssignments.filter(sub => sub.parentTaskId === taskData.id);
                         subtasks.forEach(subtaskData => {
@@ -859,14 +1070,12 @@
                 });
             }
             
-            // If there are completed tasks, add a separate section for them
             if (completedAssignments.length > 0) {
                 const completedTitle = document.createElement('h3');
                 completedTitle.className = 'text-lg font-semibold text-[--secondary-text-color] mt-6 mb-2';
                 completedTitle.textContent = 'Completed Tasks';
                 assignmentsListDiv.appendChild(completedTitle);
                 
-                // Group and render completed tasks
                 const sortedCompletedAssignments = sortAssignments(completedAssignments);
                 sortedCompletedAssignments.forEach(taskData => {
                     const taskElement = createAssignmentElement(taskData, assignmentsToRender);
@@ -875,7 +1084,6 @@
             }
         }
 
-        // Renamed and updated function to take `allAssignments` as an argument for parent/subtask logic
         function createAssignmentElement(data, allAssignments, isSubtask = false) {
             const assignmentEl = document.createElement('div');
             
@@ -892,7 +1100,7 @@
             if (data.deadline) {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const deadline = new Date(data.deadline + 'T12:00:00'); // Fix for timezone offset
+                const deadline = new Date(data.deadline + 'T12:00:00');
                 deadlineString = deadline.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                 const timeDifference = deadline.getTime() - today.getTime();
                 const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
@@ -902,15 +1110,13 @@
                 }
             }
 
-            // Left side content: title, subtask indicator, and labels
             const leftContent = document.createElement('div');
             leftContent.className = 'flex items-center space-x-2';
             
-            // Add expand/collapse button for parent tasks
             if (isParent && !data.completed) {
                 const collapseBtn = document.createElement('button');
                 collapseBtn.className = `p-1 rounded-full text-[--secondary-text-color] hover:bg-[--card-bg-color] transition-colors`;
-                collapseBtn.innerHTML = isExpanded 
+                collapseBtn.innerHTML = isExpanded
                     ? `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>`
                     : `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>`;
                 collapseBtn.onclick = (e) => {
@@ -925,305 +1131,300 @@
                 leftContent.appendChild(collapseBtn);
             }
             
-            // Task title and labels
             const titleSpan = document.createElement('span');
-            // Check for dark mode to apply the correct text color for completed tasks
             const isDarkMode = document.body.classList.contains('dark-mode');
-            const completedTextColorClass = isDarkMode ? 'completed-text-dark' : 'completed-text-light';
+            const completedTextColorClass = isDarkMode ? 'text-gray-400' : 'text-gray-600';
             titleSpan.className = `font-bold ${data.completed ? `line-through ${completedTextColorClass}` : ''}`;
             titleSpan.textContent = data.title;
             leftContent.appendChild(titleSpan);
 
-            // Right side content: deadline, difficulty, and action buttons
+            if (isUrgent && !data.completed) {
+                const urgentLabel = document.createElement('span');
+                urgentLabel.className = 'urgent-label';
+                urgentLabel.textContent = 'URGENT';
+                leftContent.appendChild(urgentLabel);
+            }
+
+            if (data.taskType === 'school' && data.subject) {
+                const subjectLabel = document.createElement('span');
+                subjectLabel.className = 'subject-label';
+                subjectLabel.textContent = data.subject;
+                subjectLabel.style.backgroundColor = subjectColors[data.subject] || '#4EA8DE';
+                leftContent.appendChild(subjectLabel);
+            }
+
             const rightContent = document.createElement('div');
             rightContent.className = 'flex gap-4 items-center flex-shrink-0';
-
+            
             const infoSpan = document.createElement('span');
             infoSpan.className = `ml-2 text-xs text-[--secondary-text-color] font-medium whitespace-nowrap`;
             infoSpan.innerHTML = `(<span class="font-semibold">Due:</span> ${deadlineString}, <span class="font-semibold">Difficulty:</span> ${data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1)})`;
             rightContent.appendChild(infoSpan);
 
-            // Action buttons container
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'flex gap-2 items-center';
             
-            // Done/Undone Button (Corrected icons)
             const doneBtn = document.createElement('button');
             doneBtn.innerHTML = data.completed
                 ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2 text-[#4EA8DE]"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"/><path d="m9 12 2 2 4-4"/></svg>`
                 : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle text-[#4EA8DE]"><circle cx="12" cy="12" r="10"/></svg>`;
             doneBtn.title = data.completed ? "Mark as incomplete" : "Mark as done";
-            doneBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium p-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
-            doneBtn.onclick = (e) => {
-                e.stopPropagation();
+            doneBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium py-1 px-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
+            doneBtn.onclick = (event) => {
+                event.stopPropagation();
                 toggleCompletion(data.id);
             };
-
-            // Remove button (Corrected SVG)
+            buttonContainer.appendChild(doneBtn);
+            
             const removeBtn = document.createElement('button');
             removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[#4EA8DE]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
             removeBtn.title = "Remove task";
-            removeBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium p-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
+            removeBtn.className = 'bg-[--card-bg-color] hover:bg-red-500 hover:text-white text-gray-500 font-medium p-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
             removeBtn.onclick = (e) => {
                 e.stopPropagation();
-                removeAssignment(data.id);
+                showDeleteConfirmation(data.id, 'task');
             };
             
-            buttonContainer.appendChild(doneBtn);
             buttonContainer.appendChild(removeBtn);
+            
+            rightContent.appendChild(buttonContainer);
             
             assignmentEl.appendChild(leftContent);
             assignmentEl.appendChild(rightContent);
-            assignmentEl.appendChild(buttonContainer);
 
             return assignmentEl;
         }
-        
-        generateBtn.addEventListener('click', generateSummary);
-        
-        function renderSummary(summaryData) {
-            summaryOutputDiv.innerHTML = '';
-            const mainContainer = document.createElement('div');
-            mainContainer.className = 'flex flex-col gap-6';
 
-            // Appointments Section
-            const appointmentsSection = document.createElement('div');
-            appointmentsSection.className = 'bg-[--main-bg-color] p-6 rounded-xl shadow-md border border-[--border-color]';
-            const appointmentsTitle = document.createElement('h3');
-            appointmentsTitle.className = 'text-xl font-semibold text-[--text-color] mb-4';
-            appointmentsTitle.textContent = `Today's Appointments`;
-            appointmentsSection.appendChild(appointmentsTitle);
-
-            if (summaryData.appointments && summaryData.appointments.length > 0) {
-                const appointmentsList = document.createElement('ul');
-                appointmentsList.className = 'space-y-2 text-[--text-color]';
-                summaryData.appointments.forEach(item => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'flex items-center gap-2';
-                    listItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-[#4EA8DE]"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span>${item}</span>`;
-                    appointmentsList.appendChild(listItem);
-                });
-                appointmentsSection.appendChild(appointmentsList);
-            } else {
-                const placeholder = document.createElement('p');
-                placeholder.className = 'text-[--secondary-text-color] italic';
-                placeholder.textContent = 'No calendar events.';
-                appointmentsSection.appendChild(placeholder);
+        // --- Calendar Logic ---
+        
+        /**
+         * Renders the calendar grid for the current month and year.
+         */
+        function renderCalendar() {
+            const date = new Date(currentYear, currentMonth);
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            currentMonthYearHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            calendarGridBody.innerHTML = '';
+            
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'calendar-day inactive';
+                calendarGridBody.appendChild(emptyDiv);
             }
-            mainContainer.appendChild(appointmentsSection);
 
-            // Tasks Section
-            const tasksSection = document.createElement('div');
-            tasksSection.className = 'bg-[--main-bg-color] p-6 rounded-xl shadow-md border border-[--border-color]';
-            const tasksTitle = document.createElement('h3');
-            tasksTitle.className = 'text-xl font-semibold text-[--text-color] mb-4';
-            tasksTitle.textContent = `Today's Tasks`;
-            tasksSection.appendChild(tasksTitle);
-
-            if (summaryData.tasks && summaryData.tasks.length > 0) {
-                const tasksList = document.createElement('ol');
-                tasksList.className = 'space-y-2 text-[--text-color] list-decimal list-inside';
+            for (let day = 1; day <= lastDay; day++) {
+                const dayDiv = document.createElement('div');
+                const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
-                const topLevelTasks = summaryData.tasks.filter(t => !t.parentTaskId);
-                const subtasks = summaryData.tasks.filter(t => t.parentTaskId);
+                dayDiv.className = 'calendar-day relative';
+                dayDiv.dataset.date = dateString;
 
-                topLevelTasks.forEach((item, index) => {
-                    const listItem = createSummaryTaskElement(item, index, assignments);
-                    tasksList.appendChild(listItem);
+                const dayNumberSpan = document.createElement('span');
+                dayNumberSpan.className = 'calendar-day-number';
+                dayNumberSpan.textContent = day;
+                dayDiv.appendChild(dayNumberSpan);
 
-                    subtasks.filter(sub => sub.parentTaskId === item.id).forEach(subtaskItem => {
-                        const subtaskListItem = createSummaryTaskElement(subtaskItem, null, assignments, true);
-                        tasksList.appendChild(subtaskListItem);
-                    });
+                const eventsForDay = events.filter(e => e.date === dateString).sort((a, b) => {
+                    if (a.time && b.time) return a.time.localeCompare(b.time);
+                    if (a.time) return -1;
+                    if (b.time) return 1;
+                    return 0;
                 });
 
-                tasksSection.appendChild(tasksList);
-            } else {
-                const placeholder = document.createElement('p');
-                placeholder.className = 'text-[--secondary-text-color] italic';
-                placeholder.textContent = 'No tasks found.';
-                tasksSection.appendChild(placeholder);
+                if (eventsForDay.length > 0) {
+                    dayDiv.classList.add('has-events');
+                    const eventsContainer = document.createElement('div');
+                    eventsContainer.className = 'calendar-events-container';
+                    eventsForDay.forEach(event => {
+                        const eventDiv = document.createElement('div');
+                        eventDiv.className = 'calendar-event flex items-center gap-2 relative';
+                        eventDiv.dataset.eventId = event.id;
+                        
+                        eventDiv.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-check"><path d="M21 14V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="M7 4v2"/><path d="M17 4v2"/><path d="M3 10h18"/><path d="m16 20 2-2 4 4"/></svg>
+                        <span class="truncate">${event.title}</span>`;
+
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'event-details-tooltip';
+                        let details = event.title;
+                        if (event.time) { details += ` at ${formatTime(event.time)}`; }
+                        if (event.location) { details += ` in ${event.location}`; }
+                        tooltip.textContent = details;
+                        eventDiv.appendChild(tooltip);
+                        
+                        eventDiv.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            showDeleteConfirmation(event.id, 'event');
+                        });
+                        eventsContainer.appendChild(eventDiv);
+                    });
+                    dayDiv.appendChild(eventsContainer);
+                }
+
+                dayDiv.addEventListener('click', () => {
+                    const existingIndicator = document.querySelector('.selected-date-indicator');
+                    if (existingIndicator) existingIndicator.remove();
+
+                    if (selectedDate !== dateString) {
+                        const indicator = document.createElement('div');
+                        indicator.className = 'selected-date-indicator';
+                        dayDiv.appendChild(indicator);
+                        selectedDate = dateString;
+                        eventDateInput.value = dateString;
+                    } else {
+                        selectedDate = null;
+                        eventDateInput.value = '';
+                    }
+                });
+                calendarGridBody.appendChild(dayDiv);
             }
-            mainContainer.appendChild(tasksSection);
-            summaryOutputDiv.appendChild(mainContainer);
         }
 
-        function createSummaryTaskElement(item, index, allAssignments, isSubtask = false) {
-            const listItem = document.createElement('li');
-            const mlClass = isSubtask ? 'ml-6' : '';
-            listItem.className = `flex justify-between items-start space-x-4 ${mlClass}`;
-            
-            const taskToMark = allAssignments.find(a => a.title === item.title);
-            const isCompleted = taskToMark ? taskToMark.completed : false;
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        });
 
-            const leftContent = document.createElement('div');
-            leftContent.className = 'flex items-center flex-grow space-x-2';
-            
-            if (index !== null) {
-                const taskNumber = document.createElement('span');
-                taskNumber.className = 'font-bold flex-shrink-0';
-                taskNumber.textContent = `${index + 1}.`;
-                leftContent.appendChild(taskNumber);
-            }
-            
-            const taskIcon = document.createElement('svg');
-            taskIcon.className = 'lucide lucide-clipboard-list text-[#4EA8DE] flex-shrink-0';
-            taskIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-            taskIcon.setAttribute('width', '16');
-            taskIcon.setAttribute('height', '16');
-            taskIcon.setAttribute('viewBox', '0 0 24 24');
-            taskIcon.setAttribute('fill', 'none');
-            taskIcon.setAttribute('stroke', 'currentColor');
-            taskIcon.setAttribute('stroke-width', '2');
-            taskIcon.setAttribute('stroke-linecap', 'round');
-            taskIcon.setAttribute('stroke-linejoin', 'round');
-            taskIcon.innerHTML = `<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>`;
-            leftContent.appendChild(taskIcon);
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCalendar();
+        });
 
-            const taskTitle = document.createElement('span');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            const completedTextColorClass = isDarkMode ? 'completed-text-dark' : 'completed-text-light';
-            taskTitle.className = `font-bold leading-snug ${isCompleted ? `line-through ${completedTextColorClass}` : 'text-[--text-color]'}`;
-            taskTitle.textContent = item.title;
-            leftContent.appendChild(taskTitle);
-
-            const labelsContainer = document.createElement('div');
-            labelsContainer.className = 'flex items-center flex-wrap gap-2 flex-shrink-0';
-
-            if (item.taskType === 'school') {
-                const subjectLabel = document.createElement('span');
-                subjectLabel.className = 'bg-[--card-bg-color] text-[--secondary-text-color] px-2 py-1 rounded-full text-xs font-medium border border-[--border-color]';
-                subjectLabel.textContent = item.subject;
-                labelsContainer.appendChild(subjectLabel);
-            }
-            if (item.isUrgent) {
-                const urgentLabel = document.createElement('span');
-                urgentLabel.className = 'urgent-label';
-                urgentLabel.textContent = 'Urgent';
-                labelsContainer.appendChild(urgentLabel);
-            }
-
-            if (labelsContainer.children.length > 0) {
-                leftContent.appendChild(labelsContainer);
-            }
-            
-            const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'flex gap-2 items-center';
-            if (taskToMark) {
-                const doneBtn = document.createElement('button');
-                doneBtn.innerHTML = isCompleted
-                    ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2 text-[#4EA8DE]"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"/><path d="m9 12 2 2 4-4"/></svg>`
-                    : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle text-[#4EA8DE]"><circle cx="12" cy="12" r="10"/></svg>`;
-                doneBtn.title = isCompleted ? "Mark as incomplete" : "Mark as done";
-                doneBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium py-1 px-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
-                doneBtn.onclick = (event) => {
-                    event.stopPropagation();
-                    toggleCompletion(taskToMark.id);
-                };
-                buttonContainer.appendChild(doneBtn);
-            }
-            
-            const taskDetailsRight = document.createElement('span');
-            taskDetailsRight.className = 'text-xs text-[--secondary-text-color] font-medium whitespace-nowrap text-right';
-            taskDetailsRight.innerHTML = `<span class="text-[--secondary-text-color]">Due:</span> ${item.deadline} • <span class="text-[--secondary-text-color]">Difficulty:</span> ${item.difficulty}`;
-
-            listItem.appendChild(leftContent);
-            listItem.appendChild(taskDetailsRight);
-            listItem.appendChild(buttonContainer);
-            return listItem;
+        // Helper function to format military time to standard time (AM/PM)
+        function formatTime(militaryTime) {
+            if (!militaryTime) return '';
+            const [hours, minutes] = militaryTime.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+            return `${formattedHours}:${String(minutes).padStart(2, '0')} ${period}`;
         }
         
+        // --- Deletion Confirmation Modal ---
+
+        /**
+         * Shows a confirmation modal for deleting an item.
+         * @param {string} itemId - The ID of the item to be deleted.
+         * @param {string} itemType - 'event' or 'task'
+         */
+        function showDeleteConfirmation(itemId, itemType) {
+            modalText.textContent = `Are you sure you want to delete this ${itemType}?`;
+            confirmationModal.classList.remove('hidden');
+            confirmationModal.classList.add('flex');
+            modalConfirmBtn.onclick = () => {
+                if (itemType === 'event') {
+                    removeEvent(itemId);
+                } else if (itemType === 'task') {
+                    removeAssignment(itemId);
+                }
+                hideDeleteConfirmation();
+            };
+            modalCancelBtn.onclick = hideDeleteConfirmation;
+        }
+
+        /**
+         * Hides the confirmation modal.
+         */
+        function hideDeleteConfirmation() {
+            confirmationModal.classList.add('hidden');
+            confirmationModal.classList.remove('flex');
+        }
+
+        // --- AI Summary Generation ---
+
         generateBtn.addEventListener('click', generateSummary);
         
         async function generateSummary() {
             loadingDiv.classList.remove('hidden');
+            summaryOutputDiv.innerHTML = '';
             summaryOutputDiv.classList.add('hidden');
             
-            const sortedAssignments = assignments.filter(a => !a.completed);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const tasksForLLM = sortedAssignments.length > 0 ? 
-                sortedAssignments.map(a => {
-                    let deadlineString = 'No Deadline';
-                    let isUrgent = false;
-                    if (a.deadline) {
-                        const deadline = new Date(a.deadline + 'T12:00:00');
-                        deadlineString = deadline.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                        const timeDifference = deadline.getTime() - today.getTime();
-                        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-                        
-                        if (daysDifference <= VERY_SOON_DAYS || (a.difficulty === 'high' && daysDifference <= SEMI_SOON_DAYS)) {
-                            isUrgent = true;
-                        }
-                    }
-                    
-                    return {
-                        title: a.title,
-                        deadline: deadlineString,
-                        difficulty: a.difficulty.charAt(0).toUpperCase() + a.difficulty.slice(1),
-                        taskType: a.taskType,
-                        subject: a.subject || null,
-                        isUrgent: isUrgent,
-                        parentTaskId: a.parentTaskId || null,
-                        id: a.id
-                    };
-                }) : [];
+            const sortedAssignments = sortAssignments(assignments.filter(a => !a.completed));
+            const allTasksForLLM = sortedAssignments.map(a => {
+                // BUG FIX: Correctly calculating the number of days until the deadline.
+                // Using UTC dates and rounding ensures accuracy and avoids timezone issues.
+                const oneDay = 1000 * 60 * 60 * 24;
+                const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+                let daysDifference = -1;
+                if (a.deadline) {
+                    const deadline = new Date(a.deadline + 'T12:00:00');
+                    const deadlineUTC = Date.UTC(deadline.getFullYear(), deadline.getMonth(), deadline.getDate());
+                    daysDifference = Math.round((deadlineUTC - todayUTC) / oneDay);
+                }
 
-            const eventsForLLM = googleCalendarEvents.length > 0 ?
-                googleCalendarEvents : [];
+                const isUrgent = daysDifference <= VERY_SOON_DAYS || (a.difficulty === 'high' && daysDifference <= SEMI_SOON_DAYS);
+                const parentTask = a.parentTaskId ? assignments.find(t => t.id === a.parentTaskId) : null;
+                return {
+                    title: a.title,
+                    deadline: a.deadline,
+                    daysUntil: daysDifference,
+                    difficulty: a.difficulty.charAt(0).toUpperCase() + a.difficulty.slice(1),
+                    taskType: a.taskType,
+                    subject: a.subject || 'N/A',
+                    isUrgent: isUrgent,
+                    parentTaskTitle: parentTask ? parentTask.title : 'N/A',
+                    id: a.id
+                };
+            });
             
-            if (tasksForLLM.length === 0 && eventsForLLM.length === 0) {
+            const upcomingEvents = events.filter(e => {
+                const eventDate = new Date(e.date);
+                const todayForDiff = new Date(today);
+                return eventDate.setHours(0,0,0,0) >= todayForDiff.setHours(0,0,0,0);
+            }).sort((a, b) => {
+                if (a.date !== b.date) return a.date.localeCompare(b.date);
+                if (a.time && b.time) return a.time.localeCompare(b.time);
+                return 0;
+            });
+            
+            const formattedEvents = upcomingEvents.map(e => ({
+                title: e.title,
+                location: e.location,
+                date: e.date,
+                time: e.time ? formatTime(e.time) : 'N/A',
+            }));
+
+            if (allTasksForLLM.length === 0 && formattedEvents.length === 0) {
                 loadingDiv.classList.add('hidden');
-                showMessage("Please add tasks or connect your calendar before generating a summary.", "bg-red-500", 5000);
+                showMessage("Please add tasks or events before generating a summary.", "bg-red-500", 5000);
                 return;
             }
-
-            const prompt = `
-                Generate a concise, priority-based daily schedule summary for today based on the following data.
-                Prioritize urgent tasks and today's appointments.
-                Appointments:
-                ${eventsForLLM.length > 0 ? eventsForLLM.join('\n') : 'No calendar events.'}
-
-                Tasks:
-                ${tasksForLLM.length > 0 ? tasksForLLM.map(task => 
-                    `- Title: ${task.title}, Difficulty: ${task.difficulty}, Due: ${task.deadline}${task.isUrgent ? ', URGENT' : ''}${task.taskType === 'school' ? `, Subject: ${task.subject}` : ''}${task.parentTaskId ? `, Subtask of: ${assignments.find(a => a.id === task.parentTaskId)?.title}` : ''}`
-                ).join('\n') : 'No tasks.'}
-            `;
             
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-            const payload = { 
-                contents: chatHistory,
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            appointments: { type: "ARRAY", items: { type: "STRING" } },
-                            tasks: { 
-                                type: "ARRAY", 
-                                items: { 
-                                    type: "OBJECT",
-                                    properties: {
-                                        title: { type: "STRING" },
-                                        deadline: { type: "STRING" },
-                                        difficulty: { type: "STRING" },
-                                        taskType: { type: "STRING" },
-                                        subject: { type: "STRING" },
-                                        isUrgent: { type: "BOOLEAN" },
-                                        parentTaskId: { type: "STRING" }
-                                    },
-                                    "propertyOrdering": ["title", "deadline", "difficulty", "taskType", "subject", "isUrgent", "parentTaskId"]
-                                }
-                            }
-                        },
-                        "propertyOrdering": ["appointments", "tasks"]
+            // Note: The AI call uses a structured prompt to get a JSON response.
+            // The prompt asks the model to prioritize urgent tasks and upcoming events.
+            const summaryPrompt = `
+                Generate a daily summary and a detailed report based on the user's tasks and appointments.
+                The output MUST be a JSON object with the following structure:
+                {
+                    "dailyFocus": ["A short, key-point sentence on the most urgent task.", "Another sentence on today's main work."],
+                    "report": {
+                        "appointments": [{"title": "Appointment title", "date": "YYYY-MM-DD", "time": "HH:MM", "location": "Location"}],
+                        "tasks": [{"title": "Task title", "details": "Formatted details", "order": 1, "taskType": "general|school", "subject": "Subject name", "parentTask": "Parent task title"}]
                     }
                 }
-            };
-            
-            const apiKey = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
+                The 'dailyFocus' should be 2-3 short, highly-prioritized sentences.
+                The 'report' should contain all upcoming appointments and active tasks. List tasks in a numbered order of priority based on urgency (deadline and difficulty). For general tasks, use "Target completion: [date]". For school assignments, use "Due: [date]". All times must be in standard AM/PM format.
+                
+                Here is the raw data:
+                
+                All active tasks:
+                ${allTasksForLLM.length > 0 ? JSON.stringify(allTasksForLLM) : 'No tasks.'}
+
+                Upcoming Appointments:
+                ${formattedEvents.length > 0 ? JSON.stringify(formattedEvents) : 'No upcoming calendar events.'}
+            `;
+
+            // --- LLM API Call with exponential backoff ---
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: summaryPrompt }] });
+            const payload = { contents: chatHistory, generationConfig: { responseMimeType: "application/json" } };
+            const apiKey = ""; // API key will be provided by the Canvas environment.
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             let attempts = 0;
             const maxAttempts = 5;
@@ -1236,23 +1437,20 @@
                         body: JSON.stringify(payload)
                     });
                     
-                    if (!response.ok) {
-                        throw new Error(`API error: ${response.status} ${response.statusText}`);
-                    }
+                    if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
                     
                     const result = await response.json();
 
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
+                    if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
                         const jsonText = result.candidates[0].content.parts[0].text;
-                        const summaryData = JSON.parse(jsonText);
-                        renderSummary(summaryData);
+                        const fullResponseData = JSON.parse(jsonText);
+                        
+                        renderDailySummary(fullResponseData.dailyFocus);
+                        renderSummary(fullResponseData.report);
+                        
                         summaryOutputDiv.classList.remove('hidden');
                     } else {
-                        summaryOutputDiv.innerHTML = '<p class="text-red-500 text-center italic mt-4">Sorry, I could not generate a summary. Please try again.</p>';
-                        summaryOutputDiv.classList.remove('hidden');
-                        console.error('Unexpected API response structure:', result);
+                        throw new Error('Unexpected API response structure.');
                     }
                     break;
                 } catch(error) {
@@ -1269,6 +1467,119 @@
                     loadingDiv.classList.add('hidden');
                 }
             }
+        }
+
+        // --- Summary Rendering ---
+        
+        /**
+         * Renders the daily focus section from the AI response.
+         * @param {Array<string>} summaryPoints - A list of key sentences.
+         */
+        function renderDailySummary(summaryPoints) {
+            const oldSummary = document.getElementById('ai-summary-section');
+            if (oldSummary) oldSummary.remove();
+            
+            const aiSummarySection = document.createElement('div');
+            aiSummarySection.id = 'ai-summary-section';
+            aiSummarySection.className = 'bg-[--main-bg-color] p-6 rounded-2xl shadow-md border border-[--border-color] mb-6';
+
+            const summaryTitle = document.createElement('h3');
+            summaryTitle.className = 'text-xl font-semibold text-[--text-color] mb-4';
+            summaryTitle.textContent = `Daily Focus`;
+            aiSummarySection.appendChild(summaryTitle);
+
+            const summaryList = document.createElement('ul');
+            summaryList.className = 'list-disc list-inside space-y-2';
+            summaryPoints.forEach(point => {
+                const li = document.createElement('li');
+                li.className = 'text-[--text-color] leading-relaxed';
+                li.textContent = point;
+                summaryList.appendChild(li);
+            });
+            aiSummarySection.appendChild(summaryList);
+            summaryOutputDiv.prepend(aiSummarySection);
+        }
+        
+        /**
+         * Renders the detailed report section from the AI response.
+         * @param {Object} report - The report object containing appointments and tasks.
+         */
+        function renderSummary(report) {
+            const existingReport = document.getElementById('ai-report-section');
+            if (existingReport) existingReport.remove();
+            
+            summaryOutputDiv.classList.remove('hidden');
+            summaryOutputDiv.className = 'bg-[--card-bg-color] p-6 rounded-2xl border border-[--border-color] shadow-md transition-opacity';
+            
+            const mainReportHeader = document.createElement('h2');
+            mainReportHeader.className = 'text-2xl font-semibold text-[--text-color] mb-4';
+            mainReportHeader.textContent = 'Daily Report';
+            summaryOutputDiv.prepend(mainReportHeader);
+            
+            const reportSection = document.createElement('div');
+            reportSection.id = 'ai-report-section';
+
+            if (report.appointments && report.appointments.length > 0) {
+                const appointmentsTitle = document.createElement('h4');
+                appointmentsTitle.className = 'text-lg font-semibold text-[--text-color] mt-4 mb-4';
+                appointmentsTitle.textContent = 'Upcoming Appointments';
+                reportSection.appendChild(appointmentsTitle);
+
+                const appointmentsList = document.createElement('div');
+                appointmentsList.className = 'flex flex-col space-y-2';
+                report.appointments.forEach(appointment => {
+                    const card = document.createElement('div');
+                    card.className = 'appointment-card bg-[--main-bg-color] rounded-xl shadow-sm border border-[--border-color]';
+                    card.innerHTML = `
+                        <div class="appointment-date-box">
+                            <div class="month">${new Date(appointment.date).toLocaleDateString('en-US', { month: 'short' })}</div>
+                            <div class="day">${new Date(appointment.date).toLocaleDateString('en-US', { day: '2-digit' })}</div>
+                        </div>
+                        <div class="flex-1 text-[--text-color]">
+                            <p class="font-bold">${appointment.title}</p>
+                            ${appointment.time ? `<p class="text-sm text-[--secondary-text-color]">Time: ${appointment.time}</p>` : ''}
+                            ${appointment.location ? `<p class="text-sm text-[--secondary-text-color]">Location: ${appointment.location}</p>` : ''}
+                        </div>
+                    `;
+                    appointmentsList.appendChild(card);
+                });
+                reportSection.appendChild(appointmentsList);
+            }
+
+            if (report.tasks && report.tasks.length > 0) {
+                const tasksTitle = document.createElement('h4');
+                tasksTitle.className = 'text-lg font-semibold text-[--text-color] mt-6 mb-4';
+                tasksTitle.textContent = 'Today\'s Tasks';
+                reportSection.appendChild(tasksTitle);
+
+                const tasksList = document.createElement('div');
+                tasksList.className = 'flex flex-col space-y-2';
+                report.tasks.forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = 'task-card bg-[--main-bg-color] rounded-xl shadow-sm border border-[--border-color]';
+                    const subjectColor = task.subject && subjectColors[task.subject] ? subjectColors[task.subject] : '#4EA8DE';
+                    let taskString = `
+                        <span class="task-order">${task.order}.</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-[--text-color]">${task.title}
+                                ${task.subject && task.subject !== 'N/A' ? `<span class="subject-label" style="background-color: ${subjectColor};">${task.subject}</span>` : ''}
+                                ${task.parentTask && task.parentTask !== 'N/A' ? `<span class="text-xs text-[--secondary-text-color] italic ml-2">(Subtask of: ${task.parentTask})</span>` : ''}
+                            </p>
+                            <p class="text-sm text-[--secondary-text-color] mt-1">${task.details}</p>
+                        </div>
+                    `;
+                    card.innerHTML = taskString;
+                    tasksList.appendChild(card);
+                });
+                reportSection.appendChild(tasksList);
+            } else {
+                const noTasksMessage = document.createElement('p');
+                noTasksMessage.className = 'text-[--secondary-text-color] text-center italic mt-4';
+                noTasksMessage.textContent = 'No tasks for today. You are all caught up!';
+                reportSection.appendChild(noTasksMessage);
+            }
+
+            summaryOutputDiv.appendChild(reportSection);
         }
     </script>
 </body>
