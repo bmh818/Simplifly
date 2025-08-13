@@ -311,7 +311,23 @@
             pointer-events: none;
             z-index: 10;
         }
-        
+
+        /* New classes for transitions */
+        /* These classes are for managing the transitions correctly */
+        .content-wrapper {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+        .content-wrapper.active {
+            opacity: 1;
+            visibility: visible;
+            position: static;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center min-h-screen text-[--text-color]">
@@ -353,158 +369,167 @@
                 </div>
             </div>
 
-            <!-- Forms for adding different task types -->
-            <!-- General Task Form (Initially visible) -->
-            <form id="add-general-task-form" class="grid gap-4 lg:grid-cols-6">
-                <input type="text" id="general-assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
-                <div class="flex flex-col lg:col-span-1 space-y-2">
-                    <label for="general-parent-task" class="text-sm font-semibold text-[--text-color]">
-                        Parent Task (Optional):
-                    </label>
-                    <select id="general-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
-                </div>
-                <div class="flex flex-col lg:col-span-2 space-y-2">
-                    <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
-                    <div class="flex gap-2">
-                        <input type="radio" id="low" name="difficulty-radio" value="low" class="difficulty-radio" checked>
-                        <label for="low" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Low</label>
-                        <input type="radio" id="medium" name="difficulty-radio" value="medium" class="difficulty-radio">
-                        <label for="medium" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Medium</label>
-                        <input type="radio" id="high" name="difficulty-radio" value="high" class="difficulty-radio">
-                        <label for="high" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">High</label>
+            <!-- This is the container for the content, which now correctly manages its flow -->
+            <div id="content-display-wrapper" class="relative min-h-[300px]">
+                <!-- General Task Content -->
+                <div id="general-content" class="content-wrapper active">
+                    <form id="add-general-task-form" class="grid gap-4 lg:grid-cols-6">
+                        <input type="text" id="general-assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                        <div class="flex flex-col lg:col-span-1 space-y-2">
+                            <label for="general-parent-task" class="text-sm font-semibold text-[--text-color]">
+                                Parent Task (Optional):
+                            </label>
+                            <select id="general-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
+                        </div>
+                        <div class="flex flex-col lg:col-span-2 space-y-2">
+                            <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
+                            <div class="flex gap-2">
+                                <input type="radio" id="low" name="difficulty-radio" value="low" class="difficulty-radio" checked>
+                                <label for="low" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Low</label>
+                                <input type="radio" id="medium" name="difficulty-radio" value="medium" class="difficulty-radio">
+                                <label for="medium" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Medium</label>
+                                <input type="radio" id="high" name="difficulty-radio" value="high" class="difficulty-radio">
+                                <label for="high" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">High</label>
+                            </div>
+                        </div>
+                        <div class="flex flex-col lg:col-span-1 space-y-2">
+                            <label for="general-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
+                            <input type="date" id="general-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);" title="Choose a deadline date">
+                            <div class="flex items-center mt-2">
+                                <input type="checkbox" id="no-deadline-checkbox" class="h-4 w-4 text-[--accent-color] border-gray-300 rounded focus:ring-[--accent-color]">
+                                <label for="no-deadline-checkbox" class="ml-2 text-sm text-[--text-color]">No Deadline</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
+                    </form>
+                    <div id="assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
+                        <p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>
                     </div>
                 </div>
-                <div class="flex flex-col lg:col-span-1 space-y-2">
-                    <label for="general-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
-                    <input type="date" id="general-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);" title="Choose a deadline date">
-                    <div class="flex items-center mt-2">
-                        <input type="checkbox" id="no-deadline-checkbox" class="h-4 w-4 text-[--accent-color] border-gray-300 rounded focus:ring-[--accent-color]">
-                        <label for="no-deadline-checkbox" class="ml-2 text-sm text-[--text-color]">No Deadline</label>
-                    </div>
-                </div>
-                <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
-            </form>
 
-            <!-- School Assignment Form (Initially hidden) -->
-            <div id="add-school-task-container" class="hidden">
-                <!-- Subject Selector & Add/Remove buttons -->
-                <div class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
-                    <div class="flex-1">
-                        <label for="subject-select" class="text-sm font-semibold text-[--text-color]">Select Subject:</label>
-                        <select id="subject-select" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
+                <!-- School Assignments Content -->
+                <div id="school-content" class="content-wrapper">
+                    <div id="add-school-task-container">
+                        <!-- Subject Selector & Add/Remove buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+                            <div class="flex-1">
+                                <label for="subject-select" class="text-sm font-semibold text-[--text-color]">Select Subject:</label>
+                                <select id="subject-select" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
+                            </div>
+                            <div class="flex-1 flex gap-2">
+                                <div class="flex-1">
+                                    <label for="new-subject-input" class="text-sm font-semibold text-[--text-color]">Or Add New Subject:</label>
+                                    <input type="text" id="new-subject-input" placeholder="e.g. Physics" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                                </div>
+                            </div>
+                            <button id="add-subject-btn" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Subject</button>
+                            <button id="remove-subject-btn" title="Remove selected subject" class="bg-gray-300 hover:bg-red-500 hover:text-white text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            </button>
+                        </div>
+                        
+                        <form id="add-school-assignment-form" class="grid gap-4 lg:grid-cols-6">
+                            <input type="text" id="school-assignment-title" placeholder="Assignment Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                            <div class="flex flex-col lg:col-span-1 space-y-2">
+                                <label for="school-parent-task" class="text-sm font-semibold text-[--text-color]">
+                                    Parent Task (Optional):
+                                </label>
+                                <select id="school-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
+                            </div>
+                            <div class="flex flex-col lg:col-span-2 space-y-2">
+                                <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
+                                <div class="flex gap-2">
+                                    <input type="radio" id="school-low" name="school-difficulty-radio" value="low" class="difficulty-radio" checked>
+                                    <label for="school-low" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Low</label>
+                                    <input type="radio" id="school-medium" name="school-difficulty-radio" value="medium" class="difficulty-radio">
+                                    <label for="school-medium" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Medium</label>
+                                    <input type="radio" id="school-high" name="school-difficulty-radio" value="high" class="difficulty-radio">
+                                    <label for="school-high" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">High</label>
+                                </div>
+                            </div>
+                            <div class="flex flex-col lg:col-span-1 space-y-2">
+                                <label for="school-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
+                                <input type="date" id="school-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                            </div>
+                            <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
+                        </form>
                     </div>
-                    <div class="flex-1 flex gap-2">
-                        <div class="flex-1">
-                            <label for="new-subject-input" class="text-sm font-semibold text-[--text-color]">Or Add New Subject:</label>
-                            <input type="text" id="new-subject-input" placeholder="e.g. Physics" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                </div>
+
+                <!-- Long-Term Goals Content -->
+                <div id="goals-content" class="content-wrapper">
+                    <div id="long-term-goals-container">
+                        <form id="add-long-term-goal-form" class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+                            <div class="flex-1">
+                                <label for="long-term-goal-input" class="text-sm font-semibold text-[--text-color]">New Long-Term Goal:</label>
+                                <input type="text" id="long-term-goal-input" placeholder="e.g. Learn a new language" required class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                            </div>
+                            <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Goal</button>
+                        </form>
+                        <div id="goals-list" class="space-y-2">
+                            <p class="text-[--secondary-text-color] text-center italic mt-4">Add a long-term goal to get started. Drag and drop to reorder.</p>
                         </div>
                     </div>
-                    <button id="add-subject-btn" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Subject</button>
-                    <button id="remove-subject-btn" title="Remove selected subject" class="bg-gray-300 hover:bg-red-500 hover:text-white text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                    </button>
                 </div>
-                
-                <form id="add-school-assignment-form" class="grid gap-4 lg:grid-cols-6">
-                    <input type="text" id="school-assignment-title" placeholder="Assignment Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
-                    <div class="flex flex-col lg:col-span-1 space-y-2">
-                        <label for="school-parent-task" class="text-sm font-semibold text-[--text-color]">
-                            Parent Task (Optional):
-                        </label>
-                        <select id="school-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
-                    </div>
-                    <div class="flex flex-col lg:col-span-2 space-y-2">
-                        <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
-                        <div class="flex gap-2">
-                            <input type="radio" id="school-low" name="school-difficulty-radio" value="low" class="difficulty-radio" checked>
-                            <label for="school-low" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Low</label>
-                            <input type="radio" id="school-medium" name="school-difficulty-radio" value="medium" class="difficulty-radio">
-                            <label for="school-medium" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">Medium</label>
-                            <input type="radio" id="school-high" name="school-difficulty-radio" value="high" class="difficulty-radio">
-                            <label for="school-high" class="difficulty-label flex-1 p-3 rounded-xl border border-[--border-color] cursor-pointer transition-all duration-200 ease-in-out bg-[--main-bg-color] text-center">High</label>
+
+                <!-- Calendar Content -->
+                <div id="calendar-content" class="content-wrapper">
+                    <div id="calendar-view-container">
+                        <!-- Add Calendar Event Form -->
+                        <form id="add-calendar-event-form" class="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
+                            <input type="text" id="event-title-input" placeholder="Event Title" required class="md:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                            <div class="flex flex-col space-y-2">
+                                <label for="event-date-input" class="text-sm font-semibold text-[--text-color]">Event Date:</label>
+                                <input type="date" id="event-date-input" required class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <label for="event-time-input" class="text-sm font-semibold text-[--text-color]">Time (Optional):</label>
+                                <input type="time" id="event-time-input" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <label for="event-location-input" class="text-sm font-semibold text-[--text-color]">Location (Optional):</label>
+                                <input type="text" id="event-location-input" placeholder="e.g. Room 101" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="recurring-checkbox" class="h-4 w-4 text-[--accent-color] border-gray-300 rounded focus:ring-[--accent-color]">
+                                    <label for="recurring-checkbox" class="ml-2 text-sm text-[--text-color]">Recurring Event (Weekly)</label>
+                                </div>
+                                <label for="recurring-end-date" id="recurring-end-date-label" class="text-sm font-semibold text-[--text-color] hidden">End Date:</label>
+                                <input type="date" id="recurring-end-date" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color] hidden" style="background-color: var(--date-input-bg);">
+                            </div>
+                            <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto md:col-span-2 lg:col-span-1">Add Event</button>
+                        </form>
+
+                        <!-- Calendar Display -->
+                        <div class="calendar-container p-6 bg-[--main-bg-color] rounded-2xl border border-[--border-color] shadow-inner">
+                            <!-- Calendar Header with month and navigation -->
+                            <div class="flex items-center justify-between mb-4">
+                                <button id="prev-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left text-[--accent-color]"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <h3 id="current-month-year" class="text-xl font-bold text-[--text-color] text-center">Month Year</h3>
+                                <button id="next-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-[--accent-color]"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
+                            <!-- Day of the week headers -->
+                            <div class="calendar-grid mb-2">
+                                <div class="calendar-day-header">Sun</div>
+                                <div class="calendar-day-header">Mon</div>
+                                <div class="calendar-day-header">Tue</div>
+                                <div class="calendar-day-header">Wed</div>
+                                <div class="calendar-day-header">Thu</div>
+                                <div class="calendar-day-header">Fri</div>
+                                <div class="calendar-day-header">Sat</div>
+                            </div>
+                            <!-- Calendar days grid -->
+                            <div id="calendar-grid-body" class="calendar-grid">
+                                <!-- Calendar days will be dynamically generated here -->
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-col lg:col-span-1 space-y-2">
-                        <label for="school-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
-                        <input type="date" id="school-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
-                    </div>
-                    <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
-                </form>
-            </div>
-            
-            <!-- Long-Term Goals Container (Initially hidden) -->
-            <div id="long-term-goals-container" class="hidden">
-                <form id="add-long-term-goal-form" class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
-                    <div class="flex-1">
-                        <label for="long-term-goal-input" class="text-sm font-semibold text-[--text-color]">New Long-Term Goal:</label>
-                        <input type="text" id="long-term-goal-input" placeholder="e.g. Learn a new language" required class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
-                    </div>
-                    <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Goal</button>
-                </form>
-                <div id="goals-list" class="space-y-2">
-                    <p class="text-[--secondary-text-color] text-center italic mt-4">Add a long-term goal to get started. Drag and drop to reorder.</p>
                 </div>
-            </div>
-
-            <!-- Calendar View Container -->
-            <div id="calendar-view-container" class="hidden">
-                <!-- Add Calendar Event Form -->
-                <form id="add-calendar-event-form" class="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
-                    <input type="text" id="event-title-input" placeholder="Event Title" required class="md:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
-                    <div class="flex flex-col space-y-2">
-                        <label for="event-date-input" class="text-sm font-semibold text-[--text-color]">Event Date:</label>
-                        <input type="date" id="event-date-input" required class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
-                    </div>
-                    <div class="flex flex-col space-y-2">
-                        <label for="event-time-input" class="text-sm font-semibold text-[--text-color]">Time (Optional):</label>
-                        <input type="time" id="event-time-input" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
-                    </div>
-                    <div class="flex flex-col space-y-2">
-                        <label for="event-location-input" class="text-sm font-semibold text-[--text-color]">Location (Optional):</label>
-                        <input type="text" id="event-location-input" placeholder="e.g. Room 101" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
-                    </div>
-                    <div class="flex flex-col space-y-2">
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="recurring-checkbox" class="h-4 w-4 text-[--accent-color] border-gray-300 rounded focus:ring-[--accent-color]">
-                            <label for="recurring-checkbox" class="ml-2 text-sm text-[--text-color]">Recurring Event (Weekly)</label>
-                        </div>
-                        <label for="recurring-end-date" id="recurring-end-date-label" class="text-sm font-semibold text-[--text-color] hidden">End Date:</label>
-                        <input type="date" id="recurring-end-date" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color] hidden" style="background-color: var(--date-input-bg);">
-                    </div>
-                    <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto md:col-span-2 lg:col-span-1">Add Event</button>
-                </form>
-
-                <!-- Calendar Display -->
-                <div class="calendar-container p-6 bg-[--main-bg-color] rounded-2xl border border-[--border-color] shadow-inner">
-                    <!-- Calendar Header with month and navigation -->
-                    <div class="flex items-center justify-between mb-4">
-                        <button id="prev-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left text-[--accent-color]"><path d="m15 18-6-6 6-6"/></svg>
-                        </button>
-                        <h3 id="current-month-year" class="text-xl font-bold text-[--text-color] text-center">Month Year</h3>
-                        <button id="next-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-[--accent-color]"><path d="m9 18 6-6-6-6"/></svg>
-                        </button>
-                    </div>
-                    <!-- Day of the week headers -->
-                    <div class="calendar-grid mb-2">
-                        <div class="calendar-day-header">Sun</div>
-                        <div class="calendar-day-header">Mon</div>
-                        <div class="calendar-day-header">Tue</div>
-                        <div class="calendar-day-header">Wed</div>
-                        <div class="calendar-day-header">Thu</div>
-                        <div class="calendar-day-header">Fri</div>
-                        <div class="calendar-day-header">Sat</div>
-                    </div>
-                    <!-- Calendar days grid -->
-                    <div id="calendar-grid-body" class="calendar-grid">
-                        <!-- Calendar days will be dynamically generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <div id="assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
-                <p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>
             </div>
         </div>
 
@@ -619,6 +644,11 @@
         const toggleSchoolBtn = document.getElementById('toggle-school');
         const toggleCalendarBtn = document.getElementById('toggle-calendar');
         const toggleGoalsBtn = document.getElementById('toggle-goals');
+        const contentDisplayWrapper = document.getElementById('content-display-wrapper');
+        const generalContentWrapper = document.getElementById('general-content');
+        const schoolContentWrapper = document.getElementById('school-content');
+        const calendarContentWrapper = document.getElementById('calendar-content');
+        const goalsContentWrapper = document.getElementById('goals-content');
         const schoolTaskContainer = document.getElementById('add-school-task-container');
         const calendarViewContainer = document.getElementById('calendar-view-container');
         const longTermGoalsContainer = document.getElementById('long-term-goals-container');
@@ -727,16 +757,14 @@
         } else {
             updateThemeIcons(false);
         }
-        const storedGreenEgg = localStorage.getItem('green-mode');
-        if (storedGreenEgg === 'active') {
+        const storedThemeState = parseInt(localStorage.getItem('theme-state') || '0');
+        themeState = storedThemeState;
+        if (themeState === 1) {
             document.body.classList.add('green-mode');
-            themeState = 1;
-        }
-        const storedRedEgg = localStorage.getItem('red-mode');
-        if (storedRedEgg === 'active') {
+        } else if (themeState === 2) {
             document.body.classList.add('red-mode');
-            themeState = 2;
         }
+
 
         // --- UI & State Management ---
 
@@ -762,37 +790,23 @@
         });
 
         mainHeadingTitle.addEventListener('click', (e) => {
-            const currentGreenState = document.body.classList.contains('green-mode');
-            const currentRedState = document.body.classList.contains('red-mode');
+            themeState = (themeState + 1) % 3; // Cycle 0 -> 1 -> 2 -> 0
+            
+            document.body.classList.remove('green-mode');
+            document.body.classList.remove('red-mode');
+            localStorage.setItem('green-mode', 'inactive');
+            localStorage.setItem('red-mode', 'inactive');
 
-            if (e.detail === 2) { // Double click for red mode
-                if (currentRedState) {
-                    document.body.classList.remove('red-mode');
-                    document.body.classList.remove('green-mode');
-                    localStorage.setItem('red-mode', 'inactive');
-                    localStorage.setItem('green-mode', 'inactive');
-                    themeState = 0;
-                } else {
-                    document.body.classList.remove('green-mode');
-                    document.body.classList.add('red-mode');
-                    localStorage.setItem('green-mode', 'inactive');
-                    localStorage.setItem('red-mode', 'active');
-                    themeState = 2;
-                }
-            } else { // Single click for green mode
-                if (currentGreenState) {
-                    document.body.classList.remove('green-mode');
-                    localStorage.setItem('green-mode', 'inactive');
-                    themeState = 0;
-                } else {
-                    document.body.classList.add('green-mode');
-                    if (currentRedState) {
-                        document.body.classList.remove('red-mode');
-                        localStorage.setItem('red-mode', 'inactive');
-                    }
-                    localStorage.setItem('green-mode', 'active');
-                    themeState = 1;
-                }
+            if (themeState === 1) {
+                document.body.classList.add('green-mode');
+                localStorage.setItem('green-mode', 'active');
+                localStorage.setItem('theme-state', '1');
+            } else if (themeState === 2) {
+                document.body.classList.add('red-mode');
+                localStorage.setItem('red-mode', 'active');
+                localStorage.setItem('theme-state', '2');
+            } else {
+                localStorage.setItem('theme-state', '0');
             }
 
             // Add a temporary spin animation to the 'S'
@@ -801,6 +815,7 @@
                 simpliflyS.classList.remove('animate-spin-once');
             }, 500); // Animation duration
         });
+
 
         /**
          * Toggles the theme between light and dark mode.
@@ -811,6 +826,20 @@
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             updateThemeIcons(isDarkMode);
         });
+
+        /**
+         * Updates the visibility of the sun and moon icons based on the theme.
+         * @param {boolean} isDarkMode - True if dark mode is active.
+         */
+        function updateThemeIcons(isDarkMode) {
+            if (isDarkMode) {
+                moonIcon.classList.remove('hidden');
+                sunIcon.classList.add('hidden');
+            } else {
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+            }
+        }
 
         /**
          * Toggles humor mode.
@@ -833,20 +862,6 @@
         });
 
         /**
-         * Updates the visibility of the sun and moon icons based on the theme.
-         * @param {boolean} isDarkMode - True if dark mode is active.
-         */
-        function updateThemeIcons(isDarkMode) {
-            if (isDarkMode) {
-                moonIcon.classList.remove('hidden');
-                sunIcon.classList.add('hidden');
-            } else {
-                moonIcon.classList.add('hidden');
-                sunIcon.classList.remove('hidden');
-            }
-        }
-
-        /**
          * Switches the main view between general tasks, school assignments, and calendar.
          * @param {string} mode - The mode to switch to ('general', 'school', 'calendar', 'goals').
          */
@@ -855,36 +870,41 @@
                 btn.classList.remove('active');
                 btn.classList.add('text-[--secondary-text-color]');
             });
-            [generalTaskForm, schoolTaskContainer, calendarViewContainer, longTermGoalsContainer, assignmentsListDiv].forEach(container => {
-                container.classList.add('hidden');
-            });
+
+            const allWrappers = [generalContentWrapper, schoolContentWrapper, calendarContentWrapper, goalsContentWrapper];
+            const activeWrapper = document.querySelector('.content-wrapper.active');
+            let nextWrapper;
             
-            taskMode = mode;
             if (mode === 'general') {
+                nextWrapper = generalContentWrapper;
                 mainHeading.textContent = 'General Tasks';
                 toggleGeneralBtn.classList.add('active');
                 toggleGeneralBtn.classList.remove('text-[--secondary-text-color]');
-                generalTaskForm.classList.remove('hidden');
-                assignmentsListDiv.classList.remove('hidden');
             } else if (mode === 'school') {
+                nextWrapper = schoolContentWrapper;
                 mainHeading.textContent = 'School Assignments';
                 toggleSchoolBtn.classList.add('active');
                 toggleSchoolBtn.classList.remove('text-[--secondary-text-color]');
-                schoolTaskContainer.classList.remove('hidden');
-                assignmentsListDiv.classList.remove('hidden');
-                fetchSubjects(); // Fix: Ensure subjects are fetched when switching to this tab.
+                fetchSubjects();
             } else if (mode === 'calendar') {
+                nextWrapper = calendarContentWrapper;
                 mainHeading.textContent = 'Calendar';
                 toggleCalendarBtn.classList.add('active');
                 toggleCalendarBtn.classList.remove('text-[--secondary-text-color]');
-                calendarViewContainer.classList.remove('hidden');
                 renderCalendar();
             } else if (mode === 'goals') {
+                nextWrapper = goalsContentWrapper;
                 mainHeading.textContent = 'Long-Term Goals';
                 toggleGoalsBtn.classList.add('active');
                 toggleGoalsBtn.classList.remove('text-[--secondary-text-color]');
-                longTermGoalsContainer.classList.remove('hidden');
                 renderLongTermGoals();
+            }
+
+            if (activeWrapper) {
+                activeWrapper.classList.remove('active');
+            }
+            if (nextWrapper) {
+                nextWrapper.classList.add('active');
             }
         }
 
@@ -1001,11 +1021,12 @@
             const privateAssignmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/assignments`);
             onSnapshot(privateAssignmentsCollection, (querySnapshot) => {
                 const now = new Date();
+                now.setHours(0, 0, 0, 0); // Set to start of the day
                 const overdueTasks = [];
                 assignments = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.deadline && new Date(data.deadline + 'T12:00:00') < now && !data.completed) {
+                    if (data.deadline && new Date(data.deadline) < now && !data.completed) {
                         overdueTasks.push(doc.id);
                     }
                     assignments.push({ ...data, id: doc.id });
@@ -1238,6 +1259,16 @@
             const isRecurring = recurringCheckbox.checked;
             const endDate = recurringEndDateInput.value;
             
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(date);
+            selectedDate.setHours(0, 0, 0, 0);
+
+            if (selectedDate < today) {
+                showMessage("You cannot schedule an event for a past day.", "bg-red-500", 5000);
+                return;
+            }
+
             if (!title || !date) { showMessage("Please enter both an event title and date.", "bg-red-500", 5000); return; }
             if (isRecurring && !endDate) { showMessage("Please select an end date for recurring events.", "bg-red-500", 5000); return; }
             if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
@@ -1794,9 +1825,8 @@
             });
             
             const upcomingEvents = events.filter(e => {
-                const eventDate = new Date(e.date);
+                const eventDate = new Date(e.date + 'T00:00:00Z');
                 const todayForDiff = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                eventDate.setHours(0,0,0,0);
                 todayForDiff.setHours(0,0,0,0);
                 return eventDate >= todayForDiff;
             }).sort((a, b) => {
@@ -2011,10 +2041,13 @@
                 report.appointments.forEach(appointment => {
                     const card = document.createElement('div');
                     card.className = 'appointment-card bg-[--main-bg-color] rounded-xl shadow-sm border border-[--border-color]';
+                    // Use the date string directly to avoid timezone issues.
+                    const dateParts = appointment.date.split('-');
+                    const appointmentDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
                     card.innerHTML = `
                         <div class="appointment-date-box">
-                            <div class="month">${new Date(appointment.date).toLocaleDateString('en-US', { month: 'short' })}</div>
-                            <div class="day">${new Date(appointment.date).toLocaleDateString('en-US', { day: '2-digit' })}</div>
+                            <div class="month">${appointmentDate.toLocaleDateString('en-US', { month: 'short' })}</div>
+                            <div class="day">${appointmentDate.toLocaleDateString('en-US', { day: '2-digit' })}</div>
                         </div>
                         <div class="flex-1 text-[--text-color]">
                             <p class="font-bold">${appointment.title}</p>
