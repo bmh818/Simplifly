@@ -21,7 +21,8 @@
             --date-input-bg: #e0f2fe; /* Light blue, equivalent of sky-100 */
             --accent-color: #4EA8DE; /* Default Blue */
             --accent-hover-color: #2E88C8;
-            --completed-bg-color: #c5ffdc;
+            --completed-bg-color: #e0f2fe;
+            --light-accent-color: #f0f8ff; /* A very light blue */
         }
 
         /* Dark Mode colors */
@@ -34,6 +35,7 @@
             --border-color: #374151;
             --date-input-bg: #2d4154; /* Dark blue, for the date input */
             --completed-bg-color: #2e5e49;
+            --light-accent-color: #2d4154;
         }
 
         /* Green Mode Easter Egg */
@@ -42,6 +44,7 @@
             --accent-hover-color: #30C667;
             --date-input-bg: #c8e6c9; /* Lighter green for input */
             --completed-bg-color: #a7f3d0;
+            --light-accent-color: #e0f8e4;
         }
 
         /* Dark Green Mode */
@@ -50,6 +53,7 @@
             --accent-hover-color: #59C380;
             --date-input-bg: #2e7d32; /* Darker green for input */
             --completed-bg-color: #2e7d32;
+            --light-accent-color: #3e8d4a;
         }
 
         /* Red Mode Easter Egg (New) */
@@ -58,6 +62,7 @@
             --accent-hover-color: #C62828;
             --date-input-bg: #FFC9C9;
             --completed-bg-color: #FFB3B3;
+            --light-accent-color: #ffe0e0;
         }
         
         /* Dark Red Mode */
@@ -66,8 +71,8 @@
             --accent-hover-color: #D32F2F;
             --date-input-bg: #4f2d2d;
             --completed-bg-color: #4f2d2d;
+            --light-accent-color: #5a3e3e;
         }
-
 
         body { 
             font-family: 'Inter', sans-serif;
@@ -129,11 +134,42 @@
         }
 
         /* Custom styles for the tab-like buttons and summary cards */
+        .tab-button {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            font-weight: 700;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+        }
+
         .tab-button.active {
             background-color: var(--accent-color);
             color: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        
+        /* New styles for the prominent Daily Report button */
+        #tabs-container #toggle-home {
+            background-color: var(--light-accent-color);
+            color: var(--text-color);
+            padding: 0.75rem 1.5rem; /* Bigger padding */
+            border-radius: 9999px; /* Full rounded corners */
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        #tabs-container #toggle-home.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
         .urgent-label {
             display: inline-block;
             background-color: #ef4444; /* red-500 */
@@ -146,15 +182,17 @@
             vertical-align: middle;
             margin-left: 8px;
         }
-        .task-card, .appointment-card {
+        .task-card, .appointment-card, .long-term-goal-card {
             display: flex;
             align-items: center;
             padding: 1rem;
             border-radius: 0.75rem;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease-in-out;
+            background-color: var(--main-bg-color);
+            border: 1px solid var(--border-color);
         }
-        .task-card:hover, .appointment-card:hover {
+        .task-card:hover, .appointment-card:hover, .long-term-goal-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
@@ -357,12 +395,19 @@
         </div>
         <p class="text-lg text-[--secondary-text-color] font-semibold mb-8 text-center sm:text-left cursor-pointer" id="ai-organizer-title">AI Schedule Organizer</p>
 
-        <!-- Tasks Section -->
+        <!-- Main Content Section - Tabs and Content -->
         <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color]">
-            <div class="flex items-center justify-between mb-4">
-                <h2 id="main-heading" class="text-2xl font-semibold text-[--text-color]">General Tasks</h2>
-                <div class="flex rounded-full bg-[--main-bg-color] shadow-md">
-                    <button id="toggle-general" class="tab-button active px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200">General Tasks</button>
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-4 sm:space-y-0">
+                <!-- Main heading to be dynamically updated -->
+                <h2 id="main-heading" class="text-2xl font-semibold text-[--text-color]">Daily Report</h2>
+                <!-- Tab Buttons -->
+                <div id="tabs-container" class="flex flex-wrap sm:flex-nowrap justify-center sm:justify-start gap-2 bg-[--main-bg-color] rounded-full p-1 shadow-md">
+                    <!-- New Home Tab -->
+                    <button id="toggle-home" class="tab-button active px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200">
+                        <span class="hidden sm:inline">Daily Report</span>
+                        <span class="inline sm:hidden">Report</span>
+                    </button>
+                    <button id="toggle-general" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">General Tasks</button>
                     <button id="toggle-school" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">School Assignments</button>
                     <button id="toggle-calendar" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">Calendar</button>
                     <button id="toggle-goals" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">Long-Term Goals</button>
@@ -371,8 +416,19 @@
 
             <!-- This is the container for the content, which now correctly manages its flow -->
             <div id="content-display-wrapper" class="relative min-h-[300px]">
+                <!-- Home Content (Now the Report Page) -->
+                <div id="home-content" class="content-wrapper active">
+                    <!-- Loading and Summary Output Section -->
+                    <div id="loading" class="hidden flex justify-center items-center h-48">
+                        <div class="w-9 h-9 rounded-full border-4 border-[--border-color] border-l-[--accent-color] animate-spin"></div>
+                    </div>
+                    <div id="summary-output" class="hidden p-6 rounded-xl shadow-md transition-opacity">
+                        <!-- AI content will be dynamically inserted here -->
+                    </div>
+                </div>
+
                 <!-- General Task Content -->
-                <div id="general-content" class="content-wrapper active">
+                <div id="general-content" class="content-wrapper">
                     <form id="add-general-task-form" class="grid gap-4 lg:grid-cols-6">
                         <input type="text" id="general-assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                         <div class="flex flex-col lg:col-span-1 space-y-2">
@@ -402,8 +458,8 @@
                         </div>
                         <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
                     </form>
-                    <div id="assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
-                        <p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>
+                    <div id="general-assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
+                        <p class="text-[--secondary-text-color] text-center italic mt-4">Add a general task to get started.</p>
                     </div>
                 </div>
 
@@ -454,21 +510,22 @@
                             <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
                         </form>
                     </div>
+                    <div id="school-assignments-list" class="space-y-3 text-sm text-[--text-color] mt-4">
+                        <p class="text-[--secondary-text-color] text-center italic mt-4">Add a school assignment to get started.</p>
+                    </div>
                 </div>
 
                 <!-- Long-Term Goals Content -->
                 <div id="goals-content" class="content-wrapper">
-                    <div id="long-term-goals-container">
-                        <form id="add-long-term-goal-form" class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
-                            <div class="flex-1">
-                                <label for="long-term-goal-input" class="text-sm font-semibold text-[--text-color]">New Long-Term Goal:</label>
-                                <input type="text" id="long-term-goal-input" placeholder="e.g. Learn a new language" required class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
-                            </div>
-                            <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Goal</button>
-                        </form>
-                        <div id="goals-list" class="space-y-2">
-                            <p class="text-[--secondary-text-color] text-center italic mt-4">Add a long-term goal to get started. Drag and drop to reorder.</p>
+                    <form id="add-long-term-goal-form" class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+                        <div class="flex-1">
+                            <label for="long-term-goal-input" class="text-sm font-semibold text-[--text-color]">New Long-Term Goal:</label>
+                            <input type="text" id="long-term-goal-input" placeholder="e.g. Learn a new language" required class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                         </div>
+                        <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Goal</button>
+                    </form>
+                    <div id="goals-list" class="space-y-2">
+                        <p class="text-[--secondary-text-color] text-center italic mt-4">Add a long-term goal to get started. Drag and drop to reorder.</p>
                     </div>
                 </div>
 
@@ -532,23 +589,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Action Buttons Section -->
-        <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color] flex flex-col md:flex-row gap-4 justify-between items-center">
-            <button id="generate-btn" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all duration-300 w-full h-14 text-lg">
-                Daily Summary
-            </button>
-            <p id="connect-calendar-btn" class="text-sm text-[--secondary-text-color] italic">
-                Connect Google Calendar (Coming Soon)
-            </p>
-        </div>
-
-        <!-- Loading and Summary Output Section -->
-        <div id="loading" class="hidden flex justify-center items-center h-48">
-            <div class="w-9 h-9 rounded-full border-4 border-[--border-color] border-l-[--accent-color] animate-spin"></div>
-        </div>
-        <div id="summary-output" class="hidden p-6 rounded-xl shadow-md transition-opacity">
-        </div>
     </div>
     
     <!-- Modals -->
@@ -609,7 +649,7 @@
         let longTermGoals = []; // New array for long-term goals
         let isAuthReady = false;
         let googleCalendarEvents = [];
-        let taskMode = 'general'; // new state variable for task type
+        let taskMode = 'home'; // new state variable for task type, now defaults to 'home'
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
@@ -634,21 +674,27 @@
         const noDeadlineCheckbox = document.getElementById('no-deadline-checkbox');
         const schoolAssignmentTitleInput = document.getElementById('school-assignment-title');
         const schoolAssignmentDeadlineInput = document.getElementById('school-assignment-deadline');
-        const assignmentsListDiv = document.getElementById('assignments-list');
-        const connectCalendarBtn = document.getElementById('connect-calendar-btn');
-        const generateBtn = document.getElementById('generate-btn');
+        const generalAssignmentsListDiv = document.getElementById('general-assignments-list');
+        const schoolAssignmentsListDiv = document.getElementById('school-assignments-list');
         const loadingDiv = document.getElementById('loading');
         const summaryOutputDiv = document.getElementById('summary-output');
         const messageBox = document.getElementById('message-box');
+        
+        // Tab buttons
+        const toggleHomeBtn = document.getElementById('toggle-home');
         const toggleGeneralBtn = document.getElementById('toggle-general');
         const toggleSchoolBtn = document.getElementById('toggle-school');
         const toggleCalendarBtn = document.getElementById('toggle-calendar');
         const toggleGoalsBtn = document.getElementById('toggle-goals');
+        
+        // Content wrappers
         const contentDisplayWrapper = document.getElementById('content-display-wrapper');
+        const homeContentWrapper = document.getElementById('home-content');
         const generalContentWrapper = document.getElementById('general-content');
         const schoolContentWrapper = document.getElementById('school-content');
         const calendarContentWrapper = document.getElementById('calendar-content');
         const goalsContentWrapper = document.getElementById('goals-content');
+        
         const schoolTaskContainer = document.getElementById('add-school-task-container');
         const calendarViewContainer = document.getElementById('calendar-view-container');
         const longTermGoalsContainer = document.getElementById('long-term-goals-container');
@@ -664,7 +710,6 @@
         const nextMonthBtn = document.getElementById('next-month-btn');
         const currentMonthYearHeader = document.getElementById('current-month-year');
         const calendarGridBody = document.getElementById('calendar-grid-body');
-        const mainHeading = document.getElementById('main-heading');
         const subjectSelect = document.getElementById('subject-select');
         const newSubjectInput = document.getElementById('new-subject-input');
         const addSubjectBtn = document.getElementById('add-subject-btn');
@@ -687,6 +732,7 @@
         const usernameModal = document.getElementById('username-modal');
         const usernameForm = document.getElementById('username-form');
         const usernameInput = document.getElementById('username-input');
+        const mainHeading = document.getElementById('main-heading');
 
 
         // --- Initialization and Event Handlers ---
@@ -728,7 +774,8 @@
                         listenForEvents();
                         listenForLongTermGoals();
                         fetchSubjects();
-                        generateBtn.disabled = false;
+                        // Automatically generate the report on initial load
+                        generateSummary();
                     } else {
                         console.log("No user signed in. Attempting anonymous authentication.");
                         try {
@@ -862,41 +909,56 @@
         });
 
         /**
-         * Switches the main view between general tasks, school assignments, and calendar.
-         * @param {string} mode - The mode to switch to ('general', 'school', 'calendar', 'goals').
+         * Switches the main view between home, general tasks, school assignments, and calendar.
+         * @param {string} mode - The mode to switch to ('home', 'general', 'school', 'calendar', 'goals').
          */
         function setTaskMode(mode) {
-            [toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn, toggleGoalsBtn].forEach(btn => {
+            [toggleHomeBtn, toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn, toggleGoalsBtn].forEach(btn => {
                 btn.classList.remove('active');
                 btn.classList.add('text-[--secondary-text-color]');
             });
+            
+            // Re-apply the special styling for the Home/Daily Report button
+            const otherButtons = [toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn, toggleGoalsBtn];
+            if (mode === 'home') {
+                toggleHomeBtn.classList.remove('text-[--secondary-text-color]');
+                toggleHomeBtn.classList.add('active');
+                otherButtons.forEach(btn => btn.classList.remove('active'));
+            } else {
+                toggleHomeBtn.classList.add('text-[--secondary-text-color]');
+                toggleHomeBtn.classList.remove('active');
+                if (mode === 'general') toggleGeneralBtn.classList.add('active');
+                if (mode === 'school') toggleSchoolBtn.classList.add('active');
+                if (mode === 'calendar') toggleCalendarBtn.classList.add('active');
+                if (mode === 'goals') toggleGoalsBtn.classList.add('active');
+            }
 
-            const allWrappers = [generalContentWrapper, schoolContentWrapper, calendarContentWrapper, goalsContentWrapper];
+
+            const allWrappers = [homeContentWrapper, generalContentWrapper, schoolContentWrapper, calendarContentWrapper, goalsContentWrapper];
             const activeWrapper = document.querySelector('.content-wrapper.active');
             let nextWrapper;
             
-            if (mode === 'general') {
+            if (mode === 'home') {
+                nextWrapper = homeContentWrapper;
+                mainHeading.textContent = 'Daily Report'; // Set heading
+                // Automatically generate the summary report when this tab is selected
+                generateSummary();
+            } else if (mode === 'general') {
                 nextWrapper = generalContentWrapper;
-                mainHeading.textContent = 'General Tasks';
-                toggleGeneralBtn.classList.add('active');
-                toggleGeneralBtn.classList.remove('text-[--secondary-text-color]');
+                mainHeading.textContent = 'General Tasks'; // Set heading
+                renderGeneralTasks(assignments);
             } else if (mode === 'school') {
                 nextWrapper = schoolContentWrapper;
-                mainHeading.textContent = 'School Assignments';
-                toggleSchoolBtn.classList.add('active');
-                toggleSchoolBtn.classList.remove('text-[--secondary-text-color]');
+                mainHeading.textContent = 'School Assignments'; // Set heading
                 fetchSubjects();
+                renderSchoolAssignments(assignments);
             } else if (mode === 'calendar') {
                 nextWrapper = calendarContentWrapper;
-                mainHeading.textContent = 'Calendar';
-                toggleCalendarBtn.classList.add('active');
-                toggleCalendarBtn.classList.remove('text-[--secondary-text-color]');
+                mainHeading.textContent = 'Calendar'; // Set heading
                 renderCalendar();
             } else if (mode === 'goals') {
                 nextWrapper = goalsContentWrapper;
-                mainHeading.textContent = 'Long-Term Goals';
-                toggleGoalsBtn.classList.add('active');
-                toggleGoalsBtn.classList.remove('text-[--secondary-text-color]');
+                mainHeading.textContent = 'Long-Term Goals'; // Set heading
                 renderLongTermGoals();
             }
 
@@ -909,6 +971,7 @@
         }
 
         // Add event listeners for the toggle buttons
+        toggleHomeBtn.addEventListener('click', () => setTaskMode('home'));
         toggleGeneralBtn.addEventListener('click', () => setTaskMode('general'));
         toggleSchoolBtn.addEventListener('click', () => setTaskMode('school'));
         toggleCalendarBtn.addEventListener('click', () => setTaskMode('calendar'));
@@ -956,16 +1019,47 @@
          */
         function sortAssignments(assignments) {
             const difficultyMap = { 'high': 3, 'medium': 2, 'low': 1 };
+            // Custom prioritization based on task type
+            const taskTypePriority = { 'school': 2, 'general': 1 };
+            
             return assignments.sort((a, b) => {
-                if (!a.deadline && b.deadline) return 1;
-                if (a.deadline && !b.deadline) return -1;
-                if (!a.deadline && !b.deadline) return 0;
+                const typeA = taskTypePriority[a.taskType] || 0;
+                const typeB = taskTypePriority[b.taskType] || 0;
                 
-                const deadlineA = new Date(a.deadline + 'T12:00:00');
-                const deadlineB = new Date(b.deadline + 'T12:00:00');
-                if (deadlineA.getTime() !== deadlineB.getTime()) {
-                    return deadlineA.getTime() - deadlineB.getTime();
+                // Also account for a "quick win" factor for low difficulty tasks
+                const isQuickA = a.difficulty === 'low';
+                const isQuickB = b.difficulty === 'low';
+
+                const deadlineA = a.deadline ? new Date(a.deadline) : null;
+                const deadlineB = b.deadline ? new Date(b.deadline) : null;
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                const daysUntilA = deadlineA ? Math.ceil((deadlineA.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : Infinity;
+                const daysUntilB = deadlineB ? Math.ceil((deadlineB.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : Infinity;
+
+                // Priority for tasks with deadlines vs no deadlines
+                if (daysUntilA === Infinity && daysUntilB !== Infinity) return 1;
+                if (daysUntilA !== Infinity && daysUntilB === Infinity) return -1;
+                if (daysUntilA === Infinity && daysUntilB === Infinity) {
+                    return typeB - typeA; // Prioritize school tasks without deadlines first
                 }
+                
+                // If deadlines are within a certain window (e.g., a week), prioritize by type and then if it's a quick win
+                if (Math.abs(daysUntilA - daysUntilB) <= 7) {
+                     if (typeA !== typeB) {
+                        return typeB - typeA;
+                     }
+                     // If types are the same, prioritize quick wins
+                     if (isQuickA && !isQuickB) return -1;
+                     if (!isQuickA && isQuickB) return 1;
+                }
+                
+                // Otherwise, sort by deadline, then difficulty
+                if (daysUntilA !== daysUntilB) {
+                    return daysUntilA - daysUntilB;
+                }
+                
                 return difficultyMap[b.difficulty] - difficultyMap[a.difficulty];
             });
         }
@@ -1033,7 +1127,8 @@
                 });
                 overdueTasks.forEach(id => removeAssignment(id, false));
                 populateParentTaskSelect(assignments.filter(t => !t.completed));
-                renderAssignments(assignments);
+                renderGeneralTasks(assignments);
+                renderSchoolAssignments(assignments);
             }, (error) => {
                 console.error("Error setting up Firestore listener for assignments:", error);
             });
@@ -1376,22 +1471,65 @@
 
         // --- Assignment Rendering ---
 
-        function renderAssignments(assignmentsToRender) {
-            assignmentsListDiv.innerHTML = '';
-            if (assignmentsToRender.length === 0) {
-                assignmentsListDiv.innerHTML = '<p id="assignments-placeholder" class="text-[--secondary-text-color] text-center italic mt-4">Add a task to get started.</p>';
+        function renderGeneralTasks(allAssignments) {
+            const generalTasks = allAssignments.filter(t => t.taskType === 'general');
+            const topLevelTasks = generalTasks.filter(t => !t.parentTaskId);
+            const subtasks = generalTasks.filter(t => t.parentTaskId);
+
+            generalAssignmentsListDiv.innerHTML = '';
+            if (generalTasks.length === 0) {
+                generalAssignmentsListDiv.innerHTML = '<p class="text-[--secondary-text-color] text-center italic mt-4">Add a general task to get started.</p>';
                 return;
             }
             
-            const activeAssignments = assignmentsToRender.filter(t => !t.completed);
-            const completedAssignments = assignmentsToRender.filter(t => t.completed);
+            const activeTopLevel = sortAssignments(topLevelTasks.filter(t => !t.completed));
+            const completedTopLevel = sortAssignments(topLevelTasks.filter(t => t.completed));
 
-            const sortedActiveAssignments = sortAssignments(activeAssignments);
-            const activeTopLevelTasks = sortedActiveAssignments.filter(task => !task.parentTaskId);
+            // Render active tasks and their subtasks
+            activeTopLevel.forEach((taskData) => {
+                const taskElement = createAssignmentElement(taskData, generalTasks);
+                generalAssignmentsListDiv.appendChild(taskElement);
+                const taskSubtasks = subtasks.filter(sub => sub.parentTaskId === taskData.id);
+                if (taskSubtasks.length > 0 && expandedParentTasks.has(taskData.id)) {
+                    taskSubtasks.forEach(subtaskData => {
+                        const subtaskElement = createAssignmentElement(subtaskData, generalTasks, true);
+                        generalAssignmentsListDiv.appendChild(subtaskElement);
+                    });
+                }
+            });
             
+            // Render completed tasks
+            if (completedTopLevel.length > 0) {
+                const completedTitle = document.createElement('h3');
+                completedTitle.className = 'text-lg font-semibold text-[--secondary-text-color] mt-6 mb-2';
+                completedTitle.textContent = 'Completed Tasks';
+                generalAssignmentsListDiv.appendChild(completedTitle);
+                
+                completedTopLevel.forEach(taskData => {
+                    const taskElement = createAssignmentElement(taskData, generalTasks);
+                    generalAssignmentsListDiv.appendChild(taskElement);
+                });
+            }
+        }
+
+        function renderSchoolAssignments(allAssignments) {
+            const schoolAssignments = allAssignments.filter(t => t.taskType === 'school');
+            const topLevelAssignments = schoolAssignments.filter(t => !t.parentTaskId);
+            const subtasks = schoolAssignments.filter(t => t.parentTaskId);
+            
+            schoolAssignmentsListDiv.innerHTML = '';
+            if (schoolAssignments.length === 0) {
+                schoolAssignmentsListDiv.innerHTML = '<p class="text-[--secondary-text-color] text-center italic mt-4">Add a school assignment to get started.</p>';
+                return;
+            }
+            
+            const activeTopLevel = sortAssignments(topLevelAssignments.filter(t => !t.completed));
+            const completedTopLevel = sortAssignments(topLevelAssignments.filter(t => t.completed));
+            
+            // Render active tasks grouped by subject
             const groupedActiveAssignments = {};
-            activeTopLevelTasks.forEach(task => {
-                const key = task.taskType === 'school' ? task.subject : 'General Tasks';
+            activeTopLevel.forEach(task => {
+                const key = task.subject;
                 if (!groupedActiveAssignments[key]) {
                     groupedActiveAssignments[key] = [];
                 }
@@ -1402,31 +1540,31 @@
                 const groupTitle = document.createElement('h3');
                 groupTitle.className = 'text-lg font-semibold text-[--text-color] mt-4 mb-2';
                 groupTitle.textContent = key;
-                assignmentsListDiv.appendChild(groupTitle);
+                schoolAssignmentsListDiv.appendChild(groupTitle);
                 
                 groupedActiveAssignments[key].forEach((taskData) => {
-                    const taskElement = createAssignmentElement(taskData, assignmentsToRender);
-                    assignmentsListDiv.appendChild(taskElement);
-                    if (expandedParentTasks.has(taskData.id)) {
-                        const subtasks = sortedActiveAssignments.filter(sub => sub.parentTaskId === taskData.id);
-                        subtasks.forEach(subtaskData => {
-                            const subtaskElement = createAssignmentElement(subtaskData, assignmentsToRender, true);
-                            assignmentsListDiv.appendChild(subtaskElement);
+                    const taskElement = createAssignmentElement(taskData, schoolAssignments);
+                    schoolAssignmentsListDiv.appendChild(taskElement);
+                    const taskSubtasks = subtasks.filter(sub => sub.parentTaskId === taskData.id);
+                    if (taskSubtasks.length > 0 && expandedParentTasks.has(taskData.id)) {
+                        taskSubtasks.forEach(subtaskData => {
+                            const subtaskElement = createAssignmentElement(subtaskData, schoolAssignments, true);
+                            schoolAssignmentsListDiv.appendChild(subtaskElement);
                         });
                     }
                 });
             }
             
-            if (completedAssignments.length > 0) {
+            // Render completed tasks
+            if (completedTopLevel.length > 0) {
                 const completedTitle = document.createElement('h3');
                 completedTitle.className = 'text-lg font-semibold text-[--secondary-text-color] mt-6 mb-2';
-                completedTitle.textContent = 'Completed Tasks';
-                assignmentsListDiv.appendChild(completedTitle);
+                completedTitle.textContent = 'Completed Assignments';
+                schoolAssignmentsListDiv.appendChild(completedTitle);
                 
-                const sortedCompletedAssignments = sortAssignments(completedAssignments);
-                sortedCompletedAssignments.forEach(taskData => {
-                    const taskElement = createAssignmentElement(taskData, assignmentsToRender);
-                    assignmentsListDiv.appendChild(taskElement);
+                completedTopLevel.forEach(taskData => {
+                    const taskElement = createAssignmentElement(taskData, schoolAssignments);
+                    schoolAssignmentsListDiv.appendChild(taskElement);
                 });
             }
         }
@@ -1473,7 +1611,9 @@
                     } else {
                         expandedParentTasks.add(data.id);
                     }
-                    renderAssignments(allAssignments);
+                    const activeTab = document.querySelector('.tab-button.active').id.replace('toggle-', '');
+                    if (activeTab === 'general') renderGeneralTasks(allAssignments);
+                    else if (activeTab === 'school') renderSchoolAssignments(allAssignments);
                 };
                 leftContent.appendChild(collapseBtn);
             }
@@ -1694,21 +1834,29 @@
                 return;
             }
 
-            const list = document.createElement('ol');
-            list.className = 'list-decimal list-inside space-y-2';
+            const list = document.createElement('div');
+            list.className = 'space-y-2';
 
             longTermGoals.forEach((goal) => {
-                const li = document.createElement('li');
-                li.className = 'bg-[--main-bg-color] p-3 rounded-xl shadow-sm border border-[--border-color] flex justify-between items-center cursor-grab';
-                li.textContent = goal.title;
+                const li = document.createElement('div');
+                li.className = 'long-term-goal-card p-4 flex justify-between items-center cursor-grab';
                 li.dataset.id = goal.id;
                 li.draggable = true;
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[--accent-color]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
-                deleteBtn.className = 'p-1 ml-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors';
-                deleteBtn.onclick = () => showDeleteConfirmation(goal.id, 'goal');
-                li.appendChild(deleteBtn);
+                li.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target-box text-[--accent-color]"><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/><path d="M5 2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5zM15 2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2zM5 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5zM15 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-2z"/></svg>
+                        <span class="font-bold text-[--text-color]">${goal.title}</span>
+                    </div>
+                    <button class="delete-goal-btn p-1 ml-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[--accent-color]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    </button>
+                `;
+
+                li.querySelector('.delete-goal-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    showDeleteConfirmation(goal.id, 'goal');
+                };
 
                 list.appendChild(li);
             });
@@ -1716,7 +1864,7 @@
             goalsListContainer.appendChild(list);
 
             // Add drag and drop event listeners
-            list.querySelectorAll('li').forEach(item => {
+            list.querySelectorAll('.long-term-goal-card').forEach(item => {
                 item.addEventListener('dragstart', handleDragStart);
                 item.addEventListener('dragover', handleDragOver);
                 item.addEventListener('drop', handleDrop);
@@ -1742,30 +1890,29 @@
 
         function handleDragOver(e) {
             e.preventDefault();
-            const bounding = e.target.getBoundingClientRect();
+            const bounding = e.target.closest('.long-term-goal-card').getBoundingClientRect();
             const offset = bounding.y + (bounding.height / 2);
-            if (e.clientY > offset) {
-                e.target.style.borderBottom = '2px solid var(--accent-color)';
-                e.target.style.borderTop = '';
-            } else {
-                e.target.style.borderTop = '2px solid var(--accent-color)';
-                e.target.style.borderBottom = '';
-            }
+            e.target.closest('.long-term-goal-card').style.borderBottom = e.clientY > offset ? '2px solid var(--accent-color)' : '';
+            e.target.closest('.long-term-goal-card').style.borderTop = e.clientY <= offset ? '2px solid var(--accent-color)' : '';
         }
 
         function handleDrop(e) {
             e.preventDefault();
-            e.target.style.borderBottom = '';
-            e.target.style.borderTop = '';
+            const targetElement = e.target.closest('.long-term-goal-card');
+            if (!targetElement) return;
 
-            if (draggedItem !== e.target && e.target.tagName === 'LI') {
-                const dropIndex = Array.from(e.target.parentNode.children).indexOf(e.target);
-                const dragIndex = Array.from(e.target.parentNode.children).indexOf(draggedItem);
+            targetElement.style.borderBottom = '';
+            targetElement.style.borderTop = '';
+
+            if (draggedItem !== targetElement) {
+                const parent = targetElement.parentNode;
+                const dropIndex = Array.from(parent.children).indexOf(targetElement);
+                const dragIndex = Array.from(parent.children).indexOf(draggedItem);
                 
                 if (dragIndex < dropIndex) {
-                    e.target.parentNode.insertBefore(draggedItem, e.target.nextSibling);
+                    parent.insertBefore(draggedItem, targetElement.nextSibling);
                 } else {
-                    e.target.parentNode.insertBefore(draggedItem, e.target);
+                    parent.insertBefore(draggedItem, targetElement);
                 }
                 updateGoalOrderInFirestore();
             }
@@ -1773,7 +1920,7 @@
         }
 
         function updateGoalOrderInFirestore() {
-            const listItems = goalsListContainer.querySelectorAll('li');
+            const listItems = goalsListContainer.querySelectorAll('.long-term-goal-card');
             listItems.forEach(async (item, index) => {
                 const goalId = item.dataset.id;
                 if (!goalId) return;
@@ -1788,9 +1935,15 @@
         
         // --- AI Summary Generation ---
 
-        generateBtn.addEventListener('click', generateSummary);
-        
         async function generateSummary() {
+            // Check if there's any data at all before making an API call
+            if (assignments.length === 0 && events.length === 0 && longTermGoals.length === 0) {
+                loadingDiv.classList.add('hidden');
+                summaryOutputDiv.classList.remove('hidden');
+                summaryOutputDiv.innerHTML = '<p class="p-6 text-[--secondary-text-color] text-center italic">Add a task, assignment, or calendar event to get started.</p>';
+                return;
+            }
+
             loadingDiv.classList.remove('hidden');
             summaryOutputDiv.innerHTML = '';
             summaryOutputDiv.classList.add('hidden');
@@ -1798,7 +1951,9 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const sortedAssignments = sortAssignments(assignments.filter(a => !a.completed));
+            // Filter out subtasks before sending to LLM as they will be handled by parent task logic
+            const topLevelAssignments = assignments.filter(a => !a.parentTaskId);
+            const sortedAssignments = sortAssignments(topLevelAssignments.filter(a => !a.completed));
             const allTasksForLLM = sortedAssignments.map(a => {
                 const oneDay = 1000 * 60 * 60 * 24;
                 const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
@@ -1842,23 +1997,14 @@
                 time: e.time ? formatTime(e.time) : 'N/A',
             }));
 
-            const goalsForLLM = longTermGoals.map(g => ({
-                title: g.title,
-                order: g.order
-            }));
-
-            if (allTasksForLLM.length === 0 && formattedEvents.length === 0 && goalsForLLM.length === 0) {
-                loadingDiv.classList.add('hidden');
-                showMessage("Please add tasks or events before generating a summary.", "bg-red-500", 5000);
-                return;
-            }
+            const goalsForLLM = longTermGoals.map(g => (g.title)); // Send only the titles
             
             let summaryPrompt = `
                 You are Simplifly, a friendly and smart AI assistant. Your job is to create a daily plan for the user in a natural, conversational, and helpful tone. You will be given a list of tasks, events, and long-term goals. You must generate a summary and a detailed report.
                 
                 The output MUST be a JSON object with the following structure:
                 {
-                    "dailyFocus": ["A short, key-point sentence on the most urgent task.", "Another sentence on today's main work."],
+                    "dailyFocus": ["A short, concise, and highly-prioritized sentence on the most important task.", "Another sentence on today's main work. Be direct and to the point."],
                     "report": {
                         "appointments": [{"title": "Appointment title", "date": "YYYY-MM-DD", "time": "HH:MM", "location": "Location"}],
                         "tasks": [{"title": "Task title", "details": "Formatted details", "order": 1, "taskType": "general|school", "subject": "Subject name", "parentTask": "Parent task title"}],
@@ -1868,7 +2014,7 @@
 
                 The 'dailyFocus' section should contain 2-3 short, highly-prioritized, action-oriented sentences. Avoid quoting task titles directly. For example, instead of "Your top priority today is to address the urgent 'Work on Simplifly' task," say "Your main focus today is making progress on the Simplifly project."
                 
-                The 'report' should contain all upcoming appointments, active tasks, and long-term goals. You must list tasks in a numbered order of priority based on urgency (deadline and difficulty). For tasks with no deadline, list them last.
+                The 'report' should contain all upcoming appointments, active tasks, and long-term goals. You must list tasks in a numbered order of priority. Prioritize based on urgency (deadline and difficulty), but importantly, consider the **type of task**. For example, a school assignment should typically take precedence over a general chore, even if the chore's deadline is slightly closer. This is a very important instruction. Also, prioritize tasks that seem like quick, small tasks slightly higher. A quick task is one with a low difficulty rating.
 
                 For task details, here's how to format them:
                 - For general tasks, use a phrase like "Aim to complete [Task title] by [date]."
@@ -1904,7 +2050,7 @@
 
                     The 'dailyFocus' section should begin with a clever joke or observation, then follow with 1-2 short, highly-prioritized, action-oriented sentences. Avoid quoting task titles directly.
                     
-                    The 'report' should contain all upcoming appointments, active tasks, and long-term goals. You must list tasks in a numbered order of priority based on urgency (deadline and difficulty). For tasks with no deadline, list them last.
+                    The 'report' should contain all upcoming appointments, active tasks, and long-term goals. You must list tasks in a numbered order of priority. Prioritize based on urgency (deadline and difficulty), but importantly, consider the **type of task**. For example, a school assignment should typically take precedence over a general chore, even if the chore's deadline is slightly closer. This is a very important instruction. Also, prioritize tasks that seem like quick, small tasks slightly higher. A quick task is one with a low difficulty rating.
 
                     For task details, here's how to format them:
                     - For general tasks, use a phrase like "Aim to complete [Task title] by [date]."
@@ -2016,17 +2162,6 @@
             summaryOutputDiv.classList.remove('hidden');
             summaryOutputDiv.className = 'bg-[--card-bg-color] p-6 rounded-2xl border border-[--border-color] shadow-md transition-opacity';
             
-            const mainReportHeader = document.createElement('h2');
-            mainReportHeader.className = 'text-2xl font-semibold text-[--text-color] mb-4';
-            
-            // Format the date for the report header
-            const today = new Date();
-            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = today.toLocaleDateString('en-US', dateOptions);
-            mainReportHeader.textContent = `Daily Report - ${formattedDate}`;
-
-            summaryOutputDiv.prepend(mainReportHeader);
-            
             const reportSection = document.createElement('div');
             reportSection.id = 'ai-report-section';
 
@@ -2099,21 +2234,26 @@
                 goalsTitle.textContent = 'Long-Term Goals';
                 reportSection.appendChild(goalsTitle);
                 
-                const goalsList = document.createElement('ol');
-                goalsList.className = 'list-decimal list-inside space-y-2 text-[--text-color]';
-                report.goals.forEach(goal => {
-                    const li = document.createElement('li');
-                    li.textContent = goal;
-                    li.className = 'pl-2';
-                    goalsList.appendChild(li);
+                const goalsList = document.createElement('div');
+                goalsList.className = 'flex flex-col space-y-2';
+                report.goals.forEach((goal) => {
+                    const card = document.createElement('div');
+                    card.className = 'long-term-goal-card p-4 bg-[--main-bg-color] rounded-xl shadow-sm border border-[--border-color] flex justify-between items-center';
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target-box text-[--accent-color]"><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/><path d="M5 2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5zM15 2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2zM5 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H5zM15 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-2z"/></svg>
+                            <span class="font-bold text-[--text-color]">${goal}</span>
+                        </div>
+                    `;
+                    goalsList.appendChild(card);
                 });
                 reportSection.appendChild(goalsList);
             }
 
             summaryOutputDiv.appendChild(reportSection);
             
-            // Update button text after rendering summary
-            generateBtn.textContent = "Re-generate summary";
+            // The generate button is no longer visible on this tab, so this line is no longer necessary.
+            // generateBtn.textContent = "Re-generate summary";
         }
     </script>
 </body>
