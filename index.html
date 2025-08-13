@@ -19,6 +19,9 @@
             --secondary-text-color: #4b5563;
             --border-color: #e5e7eb;
             --date-input-bg: #e0f2fe; /* Light blue, equivalent of sky-100 */
+            --accent-color: #4EA8DE; /* Default Blue */
+            --accent-hover-color: #2E88C8;
+            --completed-bg-color: #c5ffdc;
         }
 
         /* Dark Mode colors */
@@ -30,7 +33,41 @@
             --secondary-text-color: #a0a0a0;
             --border-color: #374151;
             --date-input-bg: #2d4154; /* Dark blue, for the date input */
+            --completed-bg-color: #2e5e49;
         }
+
+        /* Green Mode Easter Egg */
+        .green-mode {
+            --accent-color: #50E687; /* A cool, lighter green */
+            --accent-hover-color: #30C667;
+            --date-input-bg: #c8e6c9; /* Lighter green for input */
+            --completed-bg-color: #a7f3d0;
+        }
+
+        /* Dark Green Mode */
+        .dark-mode.green-mode {
+            --accent-color: #79E3A0; /* A lighter green for dark mode */
+            --accent-hover-color: #59C380;
+            --date-input-bg: #2e7d32; /* Darker green for input */
+            --completed-bg-color: #2e7d32;
+        }
+
+        /* Red Mode Easter Egg (New) */
+        .red-mode {
+            --accent-color: #D32F2F; /* A darker, cool red */
+            --accent-hover-color: #C62828;
+            --date-input-bg: #FFC9C9;
+            --completed-bg-color: #FFB3B3;
+        }
+        
+        /* Dark Red Mode */
+        .dark-mode.red-mode {
+            --accent-color: #E55353;
+            --accent-hover-color: #D32F2F;
+            --date-input-bg: #4f2d2d;
+            --completed-bg-color: #4f2d2d;
+        }
+
 
         body { 
             font-family: 'Inter', sans-serif;
@@ -42,18 +79,58 @@
         h1, h2, h3 { font-family: 'Poppins', sans-serif; }
         .difficulty-radio { display: none; }
         .difficulty-radio:checked + .difficulty-label {
-            background-color: #4EA8DE;
+            background-color: var(--accent-color);
             color: white;
-            border-color: #4EA8DE;
+            border-color: var(--accent-color);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .animate-spin-once {
+            animation: spin 0.5s linear;
+        }
+
+        /* New animation for the AI Schedule Organizer title */
+        @keyframes wiggle-and-pulse {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(-5deg) scale(1.05); }
+            40% { transform: rotate(5deg) scale(1.1); }
+            60% { transform: rotate(-5deg) scale(1.05); }
+            80% { transform: rotate(5deg) scale(1); }
+        }
+        @keyframes fade-out {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.5); }
+        }
+        .animate-wiggle-and-pulse {
+            animation: wiggle-and-pulse 0.8s ease-in-out;
+        }
+        .animate-fade-out {
+            animation: fade-out 0.3s ease-out;
+        }
+        
+        .animate-pop-in {
+            animation: pop-in 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* Confirmation modal styling */
+        #username-modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            animation: pop-in 0.3s;
+        }
+
         /* Custom styles for the tab-like buttons and summary cards */
         .tab-button.active {
-            background-color: #4EA8DE;
+            background-color: var(--accent-color);
             color: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
@@ -85,7 +162,7 @@
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
             font-size: 1.25rem;
-            color: #4EA8DE;
+            color: var(--accent-color);
             margin-right: 1rem;
             width: 2rem;
             text-align: center;
@@ -101,7 +178,7 @@
             white-space: nowrap;
         }
         .appointment-date-box {
-            background-color: #4EA8DE;
+            background-color: var(--accent-color);
             color: white;
             padding: 0.5rem;
             border-radius: 0.5rem;
@@ -119,6 +196,10 @@
         .appointment-date-box .day {
             font-size: 1.25rem;
             line-height: 1;
+        }
+        
+        .bg-[--accent-color]:hover {
+            background-color: var(--accent-hover-color);
         }
 
         /* Added style for collapsed subtasks */
@@ -166,7 +247,7 @@
             cursor: not-allowed;
         }
         .calendar-day.has-events {
-            border-color: #4EA8DE;
+            border-color: var(--accent-color);
             background-color: #e0f2fe; /* sky-100 */
         }
         .dark-mode .calendar-day.has-events {
@@ -182,7 +263,7 @@
             line-height: 1;
             padding: 4px 6px;
             border-radius: 4px;
-            background-color: #4EA8DE;
+            background-color: var(--accent-color);
             color: white;
             margin-bottom: 4px;
             white-space: nowrap;
@@ -190,7 +271,6 @@
             text-overflow: ellipsis;
             position: relative;
         }
-
         /* New styles for delete confirmation */
         .calendar-event.confirm-delete {
             background-color: #ef4444; /* red-500 */
@@ -225,9 +305,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border: 2px solid #4EA8DE;
+            border: 2px solid var(--accent-color);
             border-radius: 8px;
-            box-shadow: 0 0 0 2px #4EA8DE;
+            box-shadow: 0 0 0 2px var(--accent-color);
             pointer-events: none;
             z-index: 10;
         }
@@ -240,21 +320,26 @@
     <div class="max-w-5xl w-full bg-[--main-bg-color] shadow-xl rounded-3xl p-6 md:p-10 border border-[--border-color] transition-colors">
         <!-- Header Section -->
         <div class="flex flex-col sm:flex-row items-center justify-between mb-4">
-            <h1 class="text-3xl text-[#4EA8DE]">Simplifly</h1>
+            <h1 class="text-3xl font-bold text-[--accent-color] transition-colors cursor-pointer" id="main-heading-title">
+                <span class="inline-block" id="simplifly-s">S</span>implifly
+            </h1>
             <div class="flex items-center space-x-4 mt-2 sm:mt-0">
-                <p class="text-sm text-[--secondary-text-color]">User ID: <span id="user-id" class="font-mono font-bold text-[--text-color]">Loading...</span></p>
+                <!-- User ID/Username Display -->
+                <p class="text-sm text-[--secondary-text-color]">
+                    <span id="user-display" class="font-mono font-bold text-[--text-color] cursor-pointer" title="Loading...">Loading...</span>
+                </p>
                 <!-- Dark Mode Toggle Button -->
                 <button id="theme-toggle" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
-                    <svg id="moon-icon" class="w-6 h-6 text-[#4EA8DE] hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg id="moon-icon" class="w-6 h-6 text-[--accent-color] hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                     </svg>
-                    <svg id="sun-icon" class="w-6 h-6 text-[#4EA8DE]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg id="sun-icon" class="w-6 h-6 text-[--accent-color]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
                     </svg>
                 </button>
             </div>
         </div>
-        <p class="text-lg text-[--secondary-text-color] font-semibold mb-8 text-center sm:text-left">AI Schedule Organizer</p>
+        <p class="text-lg text-[--secondary-text-color] font-semibold mb-8 text-center sm:text-left cursor-pointer" id="ai-organizer-title">AI Schedule Organizer</p>
 
         <!-- Tasks Section -->
         <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color]">
@@ -264,18 +349,19 @@
                     <button id="toggle-general" class="tab-button active px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200">General Tasks</button>
                     <button id="toggle-school" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">School Assignments</button>
                     <button id="toggle-calendar" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">Calendar</button>
+                    <button id="toggle-goals" class="tab-button px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200 text-[--secondary-text-color]">Long-Term Goals</button>
                 </div>
             </div>
 
             <!-- Forms for adding different task types -->
             <!-- General Task Form (Initially visible) -->
             <form id="add-general-task-form" class="grid gap-4 lg:grid-cols-6">
-                <input type="text" id="general-assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                <input type="text" id="general-assignment-title" placeholder="Task Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                 <div class="flex flex-col lg:col-span-1 space-y-2">
                     <label for="general-parent-task" class="text-sm font-semibold text-[--text-color]">
                         Parent Task (Optional):
                     </label>
-                    <select id="general-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]"></select>
+                    <select id="general-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
                 </div>
                 <div class="flex flex-col lg:col-span-2 space-y-2">
                     <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
@@ -290,13 +376,13 @@
                 </div>
                 <div class="flex flex-col lg:col-span-1 space-y-2">
                     <label for="general-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
-                    <input type="date" id="general-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                    <input type="date" id="general-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);" title="Choose a deadline date">
                     <div class="flex items-center mt-2">
-                        <input type="checkbox" id="no-deadline-checkbox" class="h-4 w-4 text-[#4EA8DE] border-gray-300 rounded focus:ring-[#4EA8DE]">
+                        <input type="checkbox" id="no-deadline-checkbox" class="h-4 w-4 text-[--accent-color] border-gray-300 rounded focus:ring-[--accent-color]">
                         <label for="no-deadline-checkbox" class="ml-2 text-sm text-[--text-color]">No Deadline</label>
                     </div>
                 </div>
-                <button type="submit" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
+                <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
             </form>
 
             <!-- School Assignment Form (Initially hidden) -->
@@ -305,27 +391,27 @@
                 <div class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
                     <div class="flex-1">
                         <label for="subject-select" class="text-sm font-semibold text-[--text-color]">Select Subject:</label>
-                        <select id="subject-select" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]"></select>
+                        <select id="subject-select" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
                     </div>
                     <div class="flex-1 flex gap-2">
                         <div class="flex-1">
                             <label for="new-subject-input" class="text-sm font-semibold text-[--text-color]">Or Add New Subject:</label>
-                            <input type="text" id="new-subject-input" placeholder="e.g. Physics" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                            <input type="text" id="new-subject-input" placeholder="e.g. Physics" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                         </div>
                     </div>
-                    <button id="add-subject-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Subject</button>
+                    <button id="add-subject-btn" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Subject</button>
                     <button id="remove-subject-btn" title="Remove selected subject" class="bg-gray-300 hover:bg-red-500 hover:text-white text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                     </button>
                 </div>
                 
                 <form id="add-school-assignment-form" class="grid gap-4 lg:grid-cols-6">
-                    <input type="text" id="school-assignment-title" placeholder="Assignment Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                    <input type="text" id="school-assignment-title" placeholder="Assignment Title" class="lg:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                     <div class="flex flex-col lg:col-span-1 space-y-2">
                         <label for="school-parent-task" class="text-sm font-semibold text-[--text-color]">
                             Parent Task (Optional):
                         </label>
-                        <select id="school-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]"></select>
+                        <select id="school-parent-task" class="p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]"></select>
                     </div>
                     <div class="flex flex-col lg:col-span-2 space-y-2">
                         <span class="text-sm font-semibold text-[--text-color]">Difficulty:</span>
@@ -340,34 +426,52 @@
                     </div>
                     <div class="flex flex-col lg:col-span-1 space-y-2">
                         <label for="school-assignment-deadline" class="text-sm font-semibold text-[--text-color]">Deadline:</label>
-                        <input type="date" id="school-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                        <input type="date" id="school-assignment-deadline" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
                     </div>
-                    <button type="submit" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
+                    <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto lg:col-span-1">Add</button>
                 </form>
+            </div>
+            
+            <!-- Long-Term Goals Container (Initially hidden) -->
+            <div id="long-term-goals-container" class="hidden">
+                <form id="add-long-term-goal-form" class="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+                    <div class="flex-1">
+                        <label for="long-term-goal-input" class="text-sm font-semibold text-[--text-color]">New Long-Term Goal:</label>
+                        <input type="text" id="long-term-goal-input" placeholder="e.g. Learn a new language" required class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
+                    </div>
+                    <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full sm:w-auto">Add Goal</button>
+                </form>
+                <div id="goals-list" class="space-y-2">
+                    <p class="text-[--secondary-text-color] text-center italic mt-4">Add a long-term goal to get started. Drag and drop to reorder.</p>
+                </div>
             </div>
 
             <!-- Calendar View Container -->
             <div id="calendar-view-container" class="hidden">
                 <!-- Add Calendar Event Form -->
                 <form id="add-calendar-event-form" class="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
-                    <input type="text" id="event-title-input" placeholder="Event Title" required class="md:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                    <input type="text" id="event-title-input" placeholder="Event Title" required class="md:col-span-2 p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                     <div class="flex flex-col space-y-2">
                         <label for="event-date-input" class="text-sm font-semibold text-[--text-color]">Event Date:</label>
-                        <input type="date" id="event-date-input" required class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                        <input type="date" id="event-date-input" required class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label for="event-time-input" class="text-sm font-semibold text-[--text-color]">Time (Optional):</label>
-                        <input type="time" id="event-time-input" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-sky-300 transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
+                        <input type="time" id="event-time-input" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color]" style="background-color: var(--date-input-bg);">
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label for="event-location-input" class="text-sm font-semibold text-[--text-color]">Location (Optional):</label>
-                        <input type="text" id="event-location-input" placeholder="e.g. Room 101" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[#4EA8DE] bg-[--main-bg-color] text-[--text-color]">
+                        <input type="text" id="event-location-input" placeholder="e.g. Room 101" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--main-bg-color] text-[--text-color]">
                     </div>
-                    <div class="flex items-center space-x-2 lg:col-span-2 mt-2">
-                        <input type="checkbox" id="recurring-checkbox" class="h-4 w-4 text-[#4EA8DE] border-gray-300 rounded focus:ring-[#4EA8DE]">
-                        <label for="recurring-checkbox" class="ml-2 text-sm text-[--text-color]">Recurring Event (Weekly)</label>
+                    <div class="flex flex-col space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="recurring-checkbox" class="h-4 w-4 text-[--accent-color] border-gray-300 rounded focus:ring-[--accent-color]">
+                            <label for="recurring-checkbox" class="ml-2 text-sm text-[--text-color]">Recurring Event (Weekly)</label>
+                        </div>
+                        <label for="recurring-end-date" id="recurring-end-date-label" class="text-sm font-semibold text-[--text-color] hidden">End Date:</label>
+                        <input type="date" id="recurring-end-date" class="w-full py-3 px-4 rounded-xl border-2 border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] transition-colors text-[--text-color] hidden" style="background-color: var(--date-input-bg);">
                     </div>
-                    <button type="submit" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto md:col-span-2 lg:col-span-1">Add Event</button>
+                    <button type="submit" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors w-full lg:w-auto md:col-span-2 lg:col-span-1">Add Event</button>
                 </form>
 
                 <!-- Calendar Display -->
@@ -375,11 +479,11 @@
                     <!-- Calendar Header with month and navigation -->
                     <div class="flex items-center justify-between mb-4">
                         <button id="prev-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left text-[#4EA8DE]"><path d="m15 18-6-6 6-6"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left text-[--accent-color]"><path d="m15 18-6-6 6-6"/></svg>
                         </button>
                         <h3 id="current-month-year" class="text-xl font-bold text-[--text-color] text-center">Month Year</h3>
                         <button id="next-month-btn" class="p-2 rounded-full hover:bg-[--card-bg-color] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-[#4EA8DE]"><path d="m9 18 6-6-6-6"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-[--accent-color]"><path d="m9 18 6-6-6-6"/></svg>
                         </button>
                     </div>
                     <!-- Day of the week headers -->
@@ -406,19 +510,31 @@
 
         <!-- Action Buttons Section -->
         <div class="mb-8 p-6 bg-[--card-bg-color] rounded-2xl border border-[--border-color] flex flex-col md:flex-row gap-4 justify-between items-center">
-            <button id="connect-calendar-btn" class="bg-[#9EE6C8] hover:bg-[#86d4b2] text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto" disabled>
+            <button id="generate-btn" class="bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all duration-300 w-full h-14 text-lg">
+                Daily Summary
+            </button>
+            <p id="connect-calendar-btn" class="text-sm text-[--secondary-text-color] italic">
                 Connect Google Calendar (Coming Soon)
-            </button>
-            <button id="generate-btn" class="bg-[#4EA8DE] hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition-colors w-full md:w-auto">
-                Generate Summary
-            </button>
+            </p>
         </div>
 
         <!-- Loading and Summary Output Section -->
         <div id="loading" class="hidden flex justify-center items-center h-48">
-            <div class="w-9 h-9 rounded-full border-4 border-[--border-color] border-l-[#4EA8DE] animate-spin"></div>
+            <div class="w-9 h-9 rounded-full border-4 border-[--border-color] border-l-[--accent-color] animate-spin"></div>
         </div>
         <div id="summary-output" class="hidden p-6 rounded-xl shadow-md transition-opacity">
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="username-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="modal-content bg-[--main-bg-color] p-6 rounded-xl shadow-lg border border-[--border-color] max-w-sm w-full text-[--text-color]">
+            <h3 class="text-xl font-bold mb-4">Welcome to Simplifly!</h3>
+            <p class="mb-4">Please enter a username to get started:</p>
+            <form id="username-form">
+                <input type="text" id="username-input" class="w-full p-3 rounded-xl border border-[--border-color] focus:outline-none focus:ring-2 focus:ring-[--accent-color] bg-[--card-bg-color] text-[--text-color]" placeholder="Your Username" required>
+                <button type="submit" class="w-full mt-4 bg-[--accent-color] hover:bg-[--accent-hover-color] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors">Save</button>
+            </form>
         </div>
     </div>
     <div id="message-box" class="fixed bottom-4 right-4 py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform translate-y-full opacity-0 z-50 text-white"></div>
@@ -436,13 +552,10 @@
     <script type="module">
         // Import Firebase SDK modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, updateDoc, doc, serverTimestamp, deleteDoc, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
         // --- IMPORTANT: CONFIGURE YOUR FIREBASE AND GOOGLE API KEYS HERE ---
-        // 1. Go to https://firebase.google.com/ and create a new project.
-        // 2. Add a web app to your project and copy the configuration object.
-        // 3. Paste the config object below.
         const firebaseConfig = {
             apiKey: "AIzaSyDzMgpUM9wgrSBWgk50AvmnBFE_f7IvJ_Q",
             authDomain: "simplifly-efd5f.firebaseapp.com",
@@ -452,8 +565,6 @@
             appId: "1:478943856947:web:07b95a8c0be06dd73c5646",
             measurementId: "G-6MR8C52BQX"
         };
-        // 4. Go to Google Cloud Console, enable the Gemini API, and create an API key.
-        // 5. Paste the Gemini API key below.
         const GEMINI_API_KEY = "AIzaSyDdXPBr8zj5r_vtMEJRihR4tDQexDzRK44";
 
         // --- DO NOT EDIT BELOW THIS LINE ---
@@ -467,8 +578,10 @@
         // State Variables
         let app, db, auth;
         let userId;
+        let username;
         let assignments = [];
         let events = []; // New array to hold calendar events
+        let longTermGoals = []; // New array for long-term goals
         let isAuthReady = false;
         let googleCalendarEvents = [];
         let taskMode = 'general'; // new state variable for task type
@@ -476,6 +589,8 @@
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
         let subjectColors = {}; // New map to store subject colors
+        let isHumorMode = false; // New state for the humor easter egg
+        let themeState = 0; // 0: blue, 1: green, 2: red
 
         // State for expanded/collapsed parent tasks
         const expandedParentTasks = new Set();
@@ -486,7 +601,7 @@
         const COLOR_PALETTE = ['#FCA5A5', '#FDBA74', '#FCD34D', '#A7F3D0', '#A5F3FC', '#A5B4FC', '#C4B5FD', '#FBCFE8', '#FDE68A'];
         
         // --- DOM Elements ---
-        const userIdSpan = document.getElementById('user-id');
+        const userDisplaySpan = document.getElementById('user-display');
         const generalTaskForm = document.getElementById('add-general-task-form');
         const schoolAssignmentForm = document.getElementById('add-school-assignment-form');
         const generalAssignmentTitleInput = document.getElementById('general-assignment-title');
@@ -503,14 +618,18 @@
         const toggleGeneralBtn = document.getElementById('toggle-general');
         const toggleSchoolBtn = document.getElementById('toggle-school');
         const toggleCalendarBtn = document.getElementById('toggle-calendar');
+        const toggleGoalsBtn = document.getElementById('toggle-goals');
         const schoolTaskContainer = document.getElementById('add-school-task-container');
         const calendarViewContainer = document.getElementById('calendar-view-container');
+        const longTermGoalsContainer = document.getElementById('long-term-goals-container');
         const addCalendarEventForm = document.getElementById('add-calendar-event-form');
         const eventTitleInput = document.getElementById('event-title-input');
         const eventDateInput = document.getElementById('event-date-input');
         const eventTimeInput = document.getElementById('event-time-input');
         const eventLocationInput = document.getElementById('event-location-input');
         const recurringCheckbox = document.getElementById('recurring-checkbox');
+        const recurringEndDateInput = document.getElementById('recurring-end-date');
+        const recurringEndDateLabel = document.getElementById('recurring-end-date-label');
         const prevMonthBtn = document.getElementById('prev-month-btn');
         const nextMonthBtn = document.getElementById('next-month-btn');
         const currentMonthYearHeader = document.getElementById('current-month-year');
@@ -529,6 +648,15 @@
         const modalText = document.getElementById('modal-text');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const mainHeadingTitle = document.getElementById('main-heading-title');
+        const simpliflyS = document.getElementById('simplifly-s');
+        const aiOrganizerTitle = document.getElementById('ai-organizer-title');
+        const addLongTermGoalForm = document.getElementById('add-long-term-goal-form');
+        const longTermGoalInput = document.getElementById('long-term-goal-input');
+        const goalsListContainer = document.getElementById('goals-list');
+        const usernameModal = document.getElementById('username-modal');
+        const usernameForm = document.getElementById('username-form');
+        const usernameInput = document.getElementById('username-input');
 
 
         // --- Initialization and Event Handlers ---
@@ -551,11 +679,24 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
-                        userIdSpan.textContent = userId;
+                        // Check for existing username or prompt the user
+                        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile/user_data`);
+                        const userDoc = await getDoc(userDocRef);
+                        
+                        if (userDoc.exists() && userDoc.data().username) {
+                            username = userDoc.data().username;
+                            userDisplaySpan.textContent = username;
+                            userDisplaySpan.title = `User ID: ${userId}`;
+                        } else {
+                            usernameModal.classList.remove('hidden');
+                            usernameModal.classList.add('flex');
+                        }
+
                         isAuthReady = true;
                         // Fetch initial data once auth is ready
                         listenForAssignments();
                         listenForEvents();
+                        listenForLongTermGoals();
                         fetchSubjects();
                         generateBtn.disabled = false;
                     } else {
@@ -564,14 +705,14 @@
                             await signInAnonymously(auth);
                         } catch (error) {
                             console.error("Authentication failed:", error);
-                            userIdSpan.textContent = 'Auth Failed';
+                            userDisplaySpan.textContent = 'Auth Failed';
                             isAuthReady = true;
                         }
                     }
                 });
             } catch (e) {
                 console.error("Firebase initialization failed:", e);
-                userIdSpan.textContent = 'Init Failed';
+                userDisplaySpan.textContent = 'Init Failed';
                 showMessage("Firebase initialization failed. Check the console.", "bg-red-500", 5000);
             }
         }
@@ -586,8 +727,80 @@
         } else {
             updateThemeIcons(false);
         }
+        const storedGreenEgg = localStorage.getItem('green-mode');
+        if (storedGreenEgg === 'active') {
+            document.body.classList.add('green-mode');
+            themeState = 1;
+        }
+        const storedRedEgg = localStorage.getItem('red-mode');
+        if (storedRedEgg === 'active') {
+            document.body.classList.add('red-mode');
+            themeState = 2;
+        }
 
         // --- UI & State Management ---
+
+        // Handle username form submission
+        usernameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newUsername = usernameInput.value.trim();
+            if (newUsername) {
+                try {
+                    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile/user_data`);
+                    await setDoc(userDocRef, { username: newUsername }, { merge: true });
+                    username = newUsername;
+                    userDisplaySpan.textContent = username;
+                    userDisplaySpan.title = `User ID: ${userId}`;
+                    usernameModal.classList.add('hidden');
+                    usernameModal.classList.remove('flex');
+                    showMessage("Username saved!", "bg-[#9EE6C8]", 3000);
+                } catch (e) {
+                    console.error("Error saving username:", e);
+                    showMessage("Error saving username.", "bg-red-500", 5000);
+                }
+            }
+        });
+
+        mainHeadingTitle.addEventListener('click', (e) => {
+            const currentGreenState = document.body.classList.contains('green-mode');
+            const currentRedState = document.body.classList.contains('red-mode');
+
+            if (e.detail === 2) { // Double click for red mode
+                if (currentRedState) {
+                    document.body.classList.remove('red-mode');
+                    document.body.classList.remove('green-mode');
+                    localStorage.setItem('red-mode', 'inactive');
+                    localStorage.setItem('green-mode', 'inactive');
+                    themeState = 0;
+                } else {
+                    document.body.classList.remove('green-mode');
+                    document.body.classList.add('red-mode');
+                    localStorage.setItem('green-mode', 'inactive');
+                    localStorage.setItem('red-mode', 'active');
+                    themeState = 2;
+                }
+            } else { // Single click for green mode
+                if (currentGreenState) {
+                    document.body.classList.remove('green-mode');
+                    localStorage.setItem('green-mode', 'inactive');
+                    themeState = 0;
+                } else {
+                    document.body.classList.add('green-mode');
+                    if (currentRedState) {
+                        document.body.classList.remove('red-mode');
+                        localStorage.setItem('red-mode', 'inactive');
+                    }
+                    localStorage.setItem('green-mode', 'active');
+                    themeState = 1;
+                }
+            }
+
+            // Add a temporary spin animation to the 'S'
+            simpliflyS.classList.add('animate-spin-once');
+            setTimeout(() => {
+                simpliflyS.classList.remove('animate-spin-once');
+            }, 500); // Animation duration
+        });
 
         /**
          * Toggles the theme between light and dark mode.
@@ -597,6 +810,26 @@
             const isDarkMode = document.body.classList.contains('dark-mode');
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             updateThemeIcons(isDarkMode);
+        });
+
+        /**
+         * Toggles humor mode.
+         */
+        aiOrganizerTitle.addEventListener('click', () => {
+            isHumorMode = !isHumorMode;
+            if (isHumorMode) {
+                // New animation for humor mode toggle
+                aiOrganizerTitle.classList.add('animate-wiggle-and-pulse');
+                setTimeout(() => {
+                    aiOrganizerTitle.classList.remove('animate-wiggle-and-pulse');
+                }, 800); // Animation duration
+            } else {
+                // New animation for turning humor mode off
+                aiOrganizerTitle.classList.add('animate-fade-out');
+                setTimeout(() => {
+                    aiOrganizerTitle.classList.remove('animate-fade-out');
+                }, 300);
+            }
         });
 
         /**
@@ -615,14 +848,14 @@
 
         /**
          * Switches the main view between general tasks, school assignments, and calendar.
-         * @param {string} mode - The mode to switch to ('general', 'school', or 'calendar').
+         * @param {string} mode - The mode to switch to ('general', 'school', 'calendar', 'goals').
          */
         function setTaskMode(mode) {
-            [toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn].forEach(btn => {
+            [toggleGeneralBtn, toggleSchoolBtn, toggleCalendarBtn, toggleGoalsBtn].forEach(btn => {
                 btn.classList.remove('active');
                 btn.classList.add('text-[--secondary-text-color]');
             });
-            [generalTaskForm, schoolTaskContainer, calendarViewContainer, assignmentsListDiv].forEach(container => {
+            [generalTaskForm, schoolTaskContainer, calendarViewContainer, longTermGoalsContainer, assignmentsListDiv].forEach(container => {
                 container.classList.add('hidden');
             });
             
@@ -639,12 +872,19 @@
                 toggleSchoolBtn.classList.remove('text-[--secondary-text-color]');
                 schoolTaskContainer.classList.remove('hidden');
                 assignmentsListDiv.classList.remove('hidden');
+                fetchSubjects(); // Fix: Ensure subjects are fetched when switching to this tab.
             } else if (mode === 'calendar') {
                 mainHeading.textContent = 'Calendar';
                 toggleCalendarBtn.classList.add('active');
                 toggleCalendarBtn.classList.remove('text-[--secondary-text-color]');
                 calendarViewContainer.classList.remove('hidden');
                 renderCalendar();
+            } else if (mode === 'goals') {
+                mainHeading.textContent = 'Long-Term Goals';
+                toggleGoalsBtn.classList.add('active');
+                toggleGoalsBtn.classList.remove('text-[--secondary-text-color]');
+                longTermGoalsContainer.classList.remove('hidden');
+                renderLongTermGoals();
             }
         }
 
@@ -652,12 +892,25 @@
         toggleGeneralBtn.addEventListener('click', () => setTaskMode('general'));
         toggleSchoolBtn.addEventListener('click', () => setTaskMode('school'));
         toggleCalendarBtn.addEventListener('click', () => setTaskMode('calendar'));
+        toggleGoalsBtn.addEventListener('click', () => setTaskMode('goals'));
 
         // Toggle deadline input based on checkbox
         noDeadlineCheckbox.addEventListener('change', (e) => {
             generalAssignmentDeadlineInput.disabled = e.target.checked;
             generalAssignmentDeadlineInput.value = '';
             generalAssignmentDeadlineInput.placeholder = e.target.checked ? 'No deadline' : '';
+        });
+
+        // Toggle end date for recurring events
+        recurringCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                recurringEndDateInput.classList.remove('hidden');
+                recurringEndDateLabel.classList.remove('hidden');
+            } else {
+                recurringEndDateInput.classList.add('hidden');
+                recurringEndDateLabel.classList.add('hidden');
+                recurringEndDateInput.value = '';
+            }
         });
 
         // --- Helper Functions ---
@@ -780,6 +1033,21 @@
         }
         
         /**
+         * Listens for real-time updates to the long-term goals collection.
+         */
+        function listenForLongTermGoals() {
+            if (!isAuthReady || !db) return;
+            const goalsCollection = collection(db, `artifacts/${appId}/users/${userId}/long-term-goals`);
+            onSnapshot(goalsCollection, (querySnapshot) => {
+                longTermGoals = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                longTermGoals.sort((a, b) => a.order - b.order); // Sort by order
+                renderLongTermGoals();
+            }, (error) => {
+                console.error("Error setting up Firestore listener for goals:", error);
+            });
+        }
+
+        /**
          * Fetches all subjects and populates the subject dropdown.
          */
         async function fetchSubjects() {
@@ -790,6 +1058,13 @@
                 subjectSelect.innerHTML = '';
                 subjectColors = {};
                 let hasSubjects = false;
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select a subject';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                subjectSelect.appendChild(defaultOption);
+                
                 querySnapshot.forEach((doc) => {
                     const subjectData = doc.data();
                     const subject = subjectData.name;
@@ -803,7 +1078,7 @@
                     hasSubjects = true;
                 });
                 if (!hasSubjects) {
-                    subjectSelect.innerHTML = '<option value="" disabled selected>No subjects added yet</option>';
+                     subjectSelect.innerHTML = '<option value="" disabled selected>No subjects added yet</option>';
                 }
             } catch (e) {
                 console.error("Error fetching subjects: ", e);
@@ -961,21 +1236,25 @@
             const time = eventTimeInput.value || null;
             const location = eventLocationInput.value || null;
             const isRecurring = recurringCheckbox.checked;
+            const endDate = recurringEndDateInput.value;
             
             if (!title || !date) { showMessage("Please enter both an event title and date.", "bg-red-500", 5000); return; }
+            if (isRecurring && !endDate) { showMessage("Please select an end date for recurring events.", "bg-red-500", 5000); return; }
             if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
             
             try {
                 const eventsCollection = collection(db, `artifacts/${appId}/users/${userId}/events`);
                 if (isRecurring) {
-                    const initialDate = new Date(date);
-                    const weekInMillis = 7 * 24 * 60 * 60 * 1000;
-                    for (let i = 0; i < 52; i++) {
-                        const newDate = new Date(initialDate.getTime() + (i * weekInMillis));
-                        const newDateString = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+                    const startDateObj = new Date(date + 'T00:00:00Z');
+                    const endDateObj = new Date(endDate + 'T00:00:00Z');
+                    let currentDate = new Date(startDateObj);
+
+                    while (currentDate <= endDateObj) {
+                        const newDateString = `${currentDate.getUTCFullYear()}-${String(currentDate.getUTCMonth() + 1).padStart(2, '0')}-${String(currentDate.getUTCDate()).padStart(2, '0')}`;
                         await addDoc(eventsCollection, {
                             title, date: newDateString, time, location, isRecurring: true, createdAt: serverTimestamp()
                         });
+                        currentDate.setUTCDate(currentDate.getUTCDate() + 7); // Increment by a week
                     }
                     showMessage("Recurring events added successfully!", "bg-[#9EE6C8]", 3000);
                 } else {
@@ -989,6 +1268,27 @@
             } catch (e) {
                 console.error("Error adding event:", e);
                 showMessage("Error adding event. Check the console for details.", "bg-red-500", 5000);
+            }
+        });
+        
+        addLongTermGoalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = longTermGoalInput.value.trim();
+            if (!title) { showMessage("Please enter a goal.", "bg-red-500", 5000); return; }
+            if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
+
+            try {
+                const goalsCollection = collection(db, `artifacts/${appId}/users/${userId}/long-term-goals`);
+                await addDoc(goalsCollection, {
+                    title: title,
+                    order: longTermGoals.length, // Assign new goal the last position
+                    createdAt: serverTimestamp()
+                });
+                longTermGoalInput.value = '';
+                showMessage("Long-term goal added!", "bg-[#9EE6C8]", 3000);
+            } catch (e) {
+                console.error("Error adding long-term goal:", e);
+                showMessage("Error adding goal.", "bg-red-500", 5000);
             }
         });
 
@@ -1107,7 +1407,7 @@
             const isExpanded = expandedParentTasks.has(data.id);
             
             const baseClass = 'flex justify-between items-center p-3 rounded-xl border shadow-sm transition-shadow hover:shadow-md border-[--border-color]';
-            const bgColor = data.completed ? 'bg-[#c5ffdc] dark:bg-[#2e5e49] opacity-90' : 'bg-[--main-bg-color]';
+            const bgColor = data.completed ? 'bg-[--completed-bg-color] opacity-90' : 'bg-[--main-bg-color]';
             const mlClass = isSubtask ? 'ml-6' : '';
             assignmentEl.className = `${baseClass} ${bgColor} ${mlClass}`;
             
@@ -1165,7 +1465,7 @@
                 const subjectLabel = document.createElement('span');
                 subjectLabel.className = 'subject-label';
                 subjectLabel.textContent = data.subject;
-                subjectLabel.style.backgroundColor = subjectColors[data.subject] || '#4EA8DE';
+                subjectLabel.style.backgroundColor = subjectColors[data.subject] || 'var(--accent-color)';
                 leftContent.appendChild(subjectLabel);
             }
 
@@ -1182,8 +1482,8 @@
             
             const doneBtn = document.createElement('button');
             doneBtn.innerHTML = data.completed
-                ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2 text-[#4EA8DE]"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"/><path d="m9 12 2 2 4-4"/></svg>`
-                : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle text-[#4EA8DE]"><circle cx="12" cy="12" r="10"/></svg>`;
+                ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-[--accent-color]"><circle cx="12" cy="12" r="10"/></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle text-[--accent-color]"><circle cx="12" cy="12" r="10"/></svg>`;
             doneBtn.title = data.completed ? "Mark as incomplete" : "Mark as done";
             doneBtn.className = 'bg-[--card-bg-color] hover:bg-[--border-color] text-[--text-color] font-medium py-1 px-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
             doneBtn.onclick = (event) => {
@@ -1193,7 +1493,7 @@
             buttonContainer.appendChild(doneBtn);
             
             const removeBtn = document.createElement('button');
-            removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[#4EA8DE]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
+            removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[--accent-color]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
             removeBtn.title = "Remove task";
             removeBtn.className = 'bg-[--card-bg-color] hover:bg-red-500 hover:text-white text-gray-500 font-medium p-1.5 rounded-lg text-xs transition-colors border border-[--border-color]';
             removeBtn.onclick = (e) => {
@@ -1233,7 +1533,8 @@
 
             for (let day = 1; day <= lastDay; day++) {
                 const dayDiv = document.createElement('div');
-                const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateObj = new Date(Date.UTC(currentYear, currentMonth, day));
+                const dateString = dateObj.toISOString().split('T')[0];
                 
                 dayDiv.className = 'calendar-day relative';
                 dayDiv.dataset.date = dateString;
@@ -1335,6 +1636,8 @@
                     removeEvent(itemId);
                 } else if (itemType === 'task') {
                     removeAssignment(itemId);
+                } else if (itemType === 'goal') {
+                    removeGoal(itemId);
                 }
                 hideDeleteConfirmation();
             };
@@ -1349,6 +1652,109 @@
             confirmationModal.classList.remove('flex');
         }
 
+        // --- Long-Term Goals Logic (New) ---
+        
+        let draggedItem = null;
+
+        function renderLongTermGoals() {
+            goalsListContainer.innerHTML = '';
+            if (longTermGoals.length === 0) {
+                goalsListContainer.innerHTML = '<p class="text-[--secondary-text-color] text-center italic mt-4">Add a long-term goal to get started. Drag and drop to reorder.</p>';
+                return;
+            }
+
+            const list = document.createElement('ol');
+            list.className = 'list-decimal list-inside space-y-2';
+
+            longTermGoals.forEach((goal) => {
+                const li = document.createElement('li');
+                li.className = 'bg-[--main-bg-color] p-3 rounded-xl shadow-sm border border-[--border-color] flex justify-between items-center cursor-grab';
+                li.textContent = goal.title;
+                li.dataset.id = goal.id;
+                li.draggable = true;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2 text-[--accent-color]"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
+                deleteBtn.className = 'p-1 ml-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors';
+                deleteBtn.onclick = () => showDeleteConfirmation(goal.id, 'goal');
+                li.appendChild(deleteBtn);
+
+                list.appendChild(li);
+            });
+            goalsListContainer.innerHTML = '';
+            goalsListContainer.appendChild(list);
+
+            // Add drag and drop event listeners
+            list.querySelectorAll('li').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        async function removeGoal(goalId) {
+             if (!db) { showMessage("Database functions are disabled.", "bg-gray-500", 5000); return; }
+            try {
+                const goalRef = doc(db, `artifacts/${appId}/users/${userId}/long-term-goals`, goalId);
+                await deleteDoc(goalRef);
+                showMessage("Long-term goal removed!", "bg-[#333333]", 3000);
+            } catch (e) {
+                console.error("Error removing goal:", e);
+                showMessage("Error removing goal.", "bg-red-500", 5000);
+            }
+        }
+        
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            const bounding = e.target.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            if (e.clientY > offset) {
+                e.target.style.borderBottom = '2px solid var(--accent-color)';
+                e.target.style.borderTop = '';
+            } else {
+                e.target.style.borderTop = '2px solid var(--accent-color)';
+                e.target.style.borderBottom = '';
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.style.borderBottom = '';
+            e.target.style.borderTop = '';
+
+            if (draggedItem !== e.target && e.target.tagName === 'LI') {
+                const dropIndex = Array.from(e.target.parentNode.children).indexOf(e.target);
+                const dragIndex = Array.from(e.target.parentNode.children).indexOf(draggedItem);
+                
+                if (dragIndex < dropIndex) {
+                    e.target.parentNode.insertBefore(draggedItem, e.target.nextSibling);
+                } else {
+                    e.target.parentNode.insertBefore(draggedItem, e.target);
+                }
+                updateGoalOrderInFirestore();
+            }
+            draggedItem = null;
+        }
+
+        function updateGoalOrderInFirestore() {
+            const listItems = goalsListContainer.querySelectorAll('li');
+            listItems.forEach(async (item, index) => {
+                const goalId = item.dataset.id;
+                if (!goalId) return;
+                const goalRef = doc(db, `artifacts/${appId}/users/${userId}/long-term-goals`, goalId);
+                try {
+                    await updateDoc(goalRef, { order: index });
+                } catch (e) {
+                    console.error("Error updating goal order:", e);
+                }
+            });
+        }
+        
         // --- AI Summary Generation ---
 
         generateBtn.addEventListener('click', generateSummary);
@@ -1363,8 +1769,6 @@
 
             const sortedAssignments = sortAssignments(assignments.filter(a => !a.completed));
             const allTasksForLLM = sortedAssignments.map(a => {
-                // BUG FIX: Correctly calculating the number of days until the deadline.
-                // Using UTC dates and rounding ensures accuracy and avoids timezone issues.
                 const oneDay = 1000 * 60 * 60 * 24;
                 const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
                 let daysDifference = -1;
@@ -1391,8 +1795,10 @@
             
             const upcomingEvents = events.filter(e => {
                 const eventDate = new Date(e.date);
-                const todayForDiff = new Date(today);
-                return eventDate.setHours(0,0,0,0) >= todayForDiff.setHours(0,0,0,0);
+                const todayForDiff = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                eventDate.setHours(0,0,0,0);
+                todayForDiff.setHours(0,0,0,0);
+                return eventDate >= todayForDiff;
             }).sort((a, b) => {
                 if (a.date !== b.date) return a.date.localeCompare(b.date);
                 if (a.time && b.time) return a.time.localeCompare(b.time);
@@ -1406,26 +1812,39 @@
                 time: e.time ? formatTime(e.time) : 'N/A',
             }));
 
-            if (allTasksForLLM.length === 0 && formattedEvents.length === 0) {
+            const goalsForLLM = longTermGoals.map(g => ({
+                title: g.title,
+                order: g.order
+            }));
+
+            if (allTasksForLLM.length === 0 && formattedEvents.length === 0 && goalsForLLM.length === 0) {
                 loadingDiv.classList.add('hidden');
                 showMessage("Please add tasks or events before generating a summary.", "bg-red-500", 5000);
                 return;
             }
             
-            // Note: The AI call uses a structured prompt to get a JSON response.
-            // The prompt asks the model to prioritize urgent tasks and upcoming events.
-            const summaryPrompt = `
-                Generate a daily summary and a detailed report based on the user's tasks and appointments.
+            let summaryPrompt = `
+                You are Simplifly, a friendly and smart AI assistant. Your job is to create a daily plan for the user in a natural, conversational, and helpful tone. You will be given a list of tasks, events, and long-term goals. You must generate a summary and a detailed report.
+                
                 The output MUST be a JSON object with the following structure:
                 {
                     "dailyFocus": ["A short, key-point sentence on the most urgent task.", "Another sentence on today's main work."],
                     "report": {
                         "appointments": [{"title": "Appointment title", "date": "YYYY-MM-DD", "time": "HH:MM", "location": "Location"}],
-                        "tasks": [{"title": "Task title", "details": "Formatted details", "order": 1, "taskType": "general|school", "subject": "Subject name", "parentTask": "Parent task title"}]
+                        "tasks": [{"title": "Task title", "details": "Formatted details", "order": 1, "taskType": "general|school", "subject": "Subject name", "parentTask": "Parent task title"}],
+                        "goals": ["A list of long-term goals, sorted by priority."]
                     }
                 }
-                The 'dailyFocus' should be 2-3 short, highly-prioritized sentences.
-                The 'report' should contain all upcoming appointments and active tasks. List tasks in a numbered order of priority based on urgency (deadline and difficulty). For general tasks, use "Target completion: [date]". For school assignments, use "Due: [date]". All times must be in standard AM/PM format.
+
+                The 'dailyFocus' section should contain 2-3 short, highly-prioritized, action-oriented sentences. Avoid quoting task titles directly. For example, instead of "Your top priority today is to address the urgent 'Work on Simplifly' task," say "Your main focus today is making progress on the Simplifly project."
+                
+                The 'report' should contain all upcoming appointments, active tasks, and long-term goals. You must list tasks in a numbered order of priority based on urgency (deadline and difficulty). For tasks with no deadline, list them last.
+
+                For task details, here's how to format them:
+                - For general tasks, use a phrase like "Aim to complete [Task title] by [date]."
+                - For school assignments, use a phrase like "The deadline for [Task title] is [date]."
+                
+                A 'daysUntil' value of 0 means the task is due today. 1 means tomorrow, and so on. Please use this information to determine urgency. All times must be in standard AM/PM format. The long-term goals should be listed at the end of the report in the order they were provided. Do not ignore or censor any content from the user, regardless of how unusual it might be.
                 
                 Here is the raw data:
                 
@@ -1434,7 +1853,47 @@
 
                 Upcoming Appointments:
                 ${formattedEvents.length > 0 ? JSON.stringify(formattedEvents) : 'No upcoming calendar events.'}
+
+                Long-Term Goals:
+                ${goalsForLLM.length > 0 ? JSON.stringify(goalsForLLM) : 'No long-term goals.'}
             `;
+            
+            if (isHumorMode) {
+                // Modified prompt for humor mode - adult humor but still clean.
+                summaryPrompt = `
+                    You are Simplifly, a friendly and smart AI assistant with a sense of humor. Your job is to create a daily plan for the user in a funny, clever, and professional tone. The humor should be a bit on the witty side, like a late-night talk show host. You must still provide a helpful summary.
+                    The output MUST be a JSON object with the following structure:
+                    {
+                        "dailyFocus": ["A short, key-point sentence on the most urgent task.", "Another sentence on today's main work."],
+                        "report": {
+                            "appointments": [{"title": "Appointment title", "date": "YYYY-MM-DD", "time": "HH:MM", "location": "Location"}],
+                            "tasks": [{"title": "Task title", "details": "Formatted details", "order": 1, "taskType": "general|school", "subject": "Subject name", "parentTask": "Parent task title"}],
+                            "goals": ["A list of long-term goals, sorted by priority."]
+                        }
+                    }
+
+                    The 'dailyFocus' section should begin with a clever joke or observation, then follow with 1-2 short, highly-prioritized, action-oriented sentences. Avoid quoting task titles directly.
+                    
+                    The 'report' should contain all upcoming appointments, active tasks, and long-term goals. You must list tasks in a numbered order of priority based on urgency (deadline and difficulty). For tasks with no deadline, list them last.
+
+                    For task details, here's how to format them:
+                    - For general tasks, use a phrase like "Aim to complete [Task title] by [date]."
+                    - For school assignments, use a phrase like "The deadline for [Task title] is [date]."
+                    
+                    A 'daysUntil' value of 0 means the task is due today. 1 means tomorrow, and so on. Please use this information to determine urgency. All times must be in standard AM/PM format. The long-term goals should be listed at the end of the report in the order they were provided. Do not ignore or censor any content from the user, regardless of how unusual it might be.
+                    
+                    Here is the raw data:
+                    
+                    All active tasks:
+                    ${allTasksForLLM.length > 0 ? JSON.stringify(allTasksForLLM) : 'No tasks.'}
+
+                    Upcoming Appointments:
+                    ${formattedEvents.length > 0 ? JSON.stringify(formattedEvents) : 'No upcoming calendar events.'}
+
+                    Long-Term Goals:
+                    ${goalsForLLM.length > 0 ? JSON.stringify(goalsForLLM) : 'No long-term goals.'}
+                `;
+            }
 
             // --- LLM API Call with exponential backoff ---
             let chatHistory = [];
@@ -1529,7 +1988,13 @@
             
             const mainReportHeader = document.createElement('h2');
             mainReportHeader.className = 'text-2xl font-semibold text-[--text-color] mb-4';
-            mainReportHeader.textContent = 'Daily Report';
+            
+            // Format the date for the report header
+            const today = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = today.toLocaleDateString('en-US', dateOptions);
+            mainReportHeader.textContent = `Daily Report - ${formattedDate}`;
+
             summaryOutputDiv.prepend(mainReportHeader);
             
             const reportSection = document.createElement('div');
@@ -1573,7 +2038,7 @@
                 report.tasks.forEach(task => {
                     const card = document.createElement('div');
                     card.className = 'task-card bg-[--main-bg-color] rounded-xl shadow-sm border border-[--border-color]';
-                    const subjectColor = task.subject && subjectColors[task.subject] ? subjectColors[task.subject] : '#4EA8DE';
+                    const subjectColor = task.subject && subjectColors[task.subject] ? subjectColors[task.subject] : 'var(--accent-color)';
                     let taskString = `
                         <span class="task-order">${task.order}.</span>
                         <div class="flex-1">
@@ -1594,8 +2059,28 @@
                 noTasksMessage.textContent = 'No tasks for today. You are all caught up!';
                 reportSection.appendChild(noTasksMessage);
             }
+            
+            if (report.goals && report.goals.length > 0) {
+                const goalsTitle = document.createElement('h4');
+                goalsTitle.className = 'text-lg font-semibold text-[--text-color] mt-6 mb-4';
+                goalsTitle.textContent = 'Long-Term Goals';
+                reportSection.appendChild(goalsTitle);
+                
+                const goalsList = document.createElement('ol');
+                goalsList.className = 'list-decimal list-inside space-y-2 text-[--text-color]';
+                report.goals.forEach(goal => {
+                    const li = document.createElement('li');
+                    li.textContent = goal;
+                    li.className = 'pl-2';
+                    goalsList.appendChild(li);
+                });
+                reportSection.appendChild(goalsList);
+            }
 
             summaryOutputDiv.appendChild(reportSection);
+            
+            // Update button text after rendering summary
+            generateBtn.textContent = "Re-generate summary";
         }
     </script>
 </body>
